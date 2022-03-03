@@ -1,5 +1,6 @@
-use std::ops::{Add, Div, Index, Mul, Sub};
+use std::ops::{Add, Index, IndexMut, Mul, Sub};
 
+#[derive(Debug)]
 pub struct Vec3<T> {
     x: T,
     y: T,
@@ -12,6 +13,7 @@ pub struct Ang3 {
     phi: f64,
 }
 
+#[derive(Debug)]
 pub struct Arr3<T> {
     items: Vec<Vec<Vec<T>>>,
     dim: Vec3<usize>,
@@ -20,11 +22,15 @@ pub struct Arr3<T> {
 impl Vec3<f64> {
     pub fn normalise(&self) -> Vec3<f64> {
         let len = (self.x * self.x + self.y * self.y + self.z * self.z).sqrt();
-        self / len
+        Vec3 {
+            x: self.x / len,
+            y: self.y / len,
+            z: self.z / len,
+        }
     }
 }
 
-impl<T> Arr3<T> {
+impl<T: Clone> Arr3<T> {
     pub fn new(x: usize, y: usize, z: usize, fill: T) -> Arr3<T> {
         Arr3 {
             items: vec![vec![vec![fill; z]; y]; x],
@@ -37,6 +43,12 @@ impl<T> Index<usize> for Arr3<T> {
     type Output = Vec<Vec<T>>;
     fn index(&self, index: usize) -> &Self::Output {
         &self.items[index]
+    }
+}
+
+impl<T> IndexMut<usize> for Arr3<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.items[index]
     }
 }
 
@@ -64,7 +76,6 @@ impl Sub for Vec3<f64> {
 }
 //#endregion vector addition
 
-//#region vector scaling
 impl Mul<f64> for Vec3<f64> {
     type Output = Self;
     fn mul(self, scale: f64) -> Self {
@@ -75,15 +86,3 @@ impl Mul<f64> for Vec3<f64> {
         }
     }
 }
-
-impl Div<f64> for Vec3<f64> {
-    type Output = Self;
-    fn div(self, scale: f64) -> Self {
-        Self {
-            x: self.x / scale,
-            y: self.y / scale,
-            z: self.z / scale,
-        }
-    }
-}
-//#endregion vector scaling
