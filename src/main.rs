@@ -3,7 +3,7 @@ use std::io::Result;
 use std::env;
 use crate::reader::read_text;
 
-mod linalg;
+mod math;
 mod cam;
 mod reader;
 
