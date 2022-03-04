@@ -2,15 +2,16 @@ use std::ops::{Add, Index, IndexMut, Mul, Sub};
 
 #[derive(Debug)]
 pub struct Vec3<T> {
-    x: T,
-    y: T,
-    z: T,
+    pub x: T,
+    pub y: T,
+    pub z: T,
 }
 
+#[derive(Debug)]
 pub struct Ang3 {
     // https://en.wikipedia.org/wiki/Spherical_coordinate_system
-    theta: f64,
-    phi: f64,
+    pub theta: f64,
+    pub phi: f64,
 }
 
 #[derive(Debug)]
