@@ -3,7 +3,7 @@ use std::io::{BufRead, BufReader, Result};
 use std::path::PathBuf;
 use std::str::FromStr;
 use termion::input::TermRead;
-use crate::linalg::Arr3;
+use crate::math::Arr3;
 
 fn take_from_line<T: FromStr>(mut r: &mut BufReader<File>, n: usize) -> Vec<T> {
     //! take n items from line
