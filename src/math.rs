@@ -22,7 +22,7 @@ pub struct Arr2<T> {
     y: usize,
 }
 
-pub fn normalise(vec3: Vec3<f64>) -> Vec3<f64> {
+pub fn to_unit(vec3: Vec3<f64>) -> Vec3<f64> {
     let len = (vec3.x * vec3.x + vec3.y * vec3.y + vec3.z * vec3.z).sqrt();
     Vec3 {
         x: vec3.x / len,
@@ -31,7 +31,15 @@ pub fn normalise(vec3: Vec3<f64>) -> Vec3<f64> {
     }
 }
 
-//#region init
+pub fn to_vec3(theta: f64, phi: f64) -> Vec3<f64> {
+    Vec3 {
+        x: phi.sin() * theta.cos(),
+        y: phi.sin() * theta.sin(),
+        z: phi.cos(),
+    }
+}
+
+//#region impl
 impl<T: Clone> Arr3<T> {
     pub fn new(x: usize, y: usize, z: usize, fill: T) -> Arr3<T> {
         Arr3 {
@@ -52,7 +60,7 @@ impl<T: Clone> Arr2<T> {
         }
     }
 }
-//#endregion init
+//#endregion impl
 
 //#region index
 impl<T> Index<usize> for Arr3<T> {
