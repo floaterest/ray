@@ -125,4 +125,16 @@ impl Mul<f64> for Vec3<f64> {
         }
     }
 }
+
+/// cross product
+impl Mul for Vec3<f64> {
+    type Output = Self;
+    fn mul(self, other: Self) -> Self {
+        Self {
+            x: self.y * other.z - self.z - other.y,
+            y: self.x * other.z - self.z * other.x,
+            z: self.x * other.y - self.y * other.x,
+        }
+    }
+}
 //#endregion vec operations
