@@ -40,6 +40,7 @@ impl Vec3<f64> {
     }
 }
 
+//#region init
 impl<T: Clone> Arr3<T> {
     pub fn new(x: usize, y: usize, z: usize, fill: T) -> Arr3<T> {
         Arr3 {
@@ -60,7 +61,9 @@ impl<T: Clone> Arr2<T> {
         }
     }
 }
+//#endregion init
 
+//#region index
 impl<T> Index<usize> for Arr3<T> {
     type Output = Vec<Vec<T>>;
     fn index(&self, index: usize) -> &Self::Output {
@@ -86,8 +89,9 @@ impl<T> IndexMut<usize> for Arr2<T> {
         &mut self.items[index]
     }
 }
+//#endregion index
 
-//#region vector addition
+//#region vec operations
 impl Add for Vec3<f64> {
     type Output = Self;
     fn add(self, other: Self) -> Self {
@@ -109,8 +113,8 @@ impl Sub for Vec3<f64> {
         }
     }
 }
-//#endregion vector addition
 
+/// scaling
 impl Mul<f64> for Vec3<f64> {
     type Output = Self;
     fn mul(self, scale: f64) -> Self {
@@ -121,3 +125,4 @@ impl Mul<f64> for Vec3<f64> {
         }
     }
 }
+//#endregion vec operations
