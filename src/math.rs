@@ -8,13 +8,6 @@ pub struct Vec3<T> {
 }
 
 #[derive(Debug)]
-pub struct Ang3 {
-    // https://en.wikipedia.org/wiki/Spherical_coordinate_system
-    pub theta: f64,
-    pub phi: f64,
-}
-
-#[derive(Debug)]
 pub struct Arr3<T> {
     items: Vec<Vec<Vec<T>>>,
     x: usize,
@@ -29,14 +22,12 @@ pub struct Arr2<T> {
     y: usize,
 }
 
-impl Vec3<f64> {
-    pub fn normalise(&self) -> Vec3<f64> {
-        let len = (self.x * self.x + self.y * self.y + self.z * self.z).sqrt();
-        Vec3 {
-            x: self.x / len,
-            y: self.y / len,
-            z: self.z / len,
-        }
+pub fn normalise(vec3: Vec3<f64>) -> Vec3<f64> {
+    let len = (vec3.x * vec3.x + vec3.y * vec3.y + vec3.z * vec3.z).sqrt();
+    Vec3 {
+        x: vec3.x / len,
+        y: vec3.y / len,
+        z: vec3.z / len,
     }
 }
 
@@ -78,7 +69,7 @@ impl<T> IndexMut<usize> for Arr3<T> {
 }
 
 impl<T> Index<usize> for Arr2<T> {
-    type Output = Vec<Vec<T>>;
+    type Output = Vec<T>;
     fn index(&self, index: usize) -> &Self::Output {
         &self.items[index]
     }
@@ -127,10 +118,10 @@ impl Mul<f64> for Vec3<f64> {
 }
 
 /// cross product
-impl Mul for Vec3<f64> {
-    type Output = Self;
-    fn mul(self, other: Self) -> Self {
-        Self {
+impl Mul for &Vec3<f64> {
+    type Output = Vec3<f64>;
+    fn mul(self, other: Self) -> Vec3<f64> {
+        Vec3 {
             x: self.y * other.z - self.z - other.y,
             y: self.x * other.z - self.z * other.x,
             z: self.x * other.y - self.y * other.x,
