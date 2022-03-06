@@ -17,7 +17,16 @@ pub struct Ang3 {
 #[derive(Debug)]
 pub struct Arr3<T> {
     items: Vec<Vec<Vec<T>>>,
-    dim: Vec3<usize>,
+    x: usize,
+    y: usize,
+    z: usize,
+}
+
+#[derive(Debug)]
+pub struct Arr2<T> {
+    items: Vec<Vec<T>>,
+    x: usize,
+    y: usize,
 }
 
 impl Vec3<f64> {
@@ -35,7 +44,19 @@ impl<T: Clone> Arr3<T> {
     pub fn new(x: usize, y: usize, z: usize, fill: T) -> Arr3<T> {
         Arr3 {
             items: vec![vec![vec![fill; z]; y]; x],
-            dim: Vec3 { x, y, z },
+            x,
+            y,
+            z,
+        }
+    }
+}
+
+impl<T: Clone> Arr2<T> {
+    pub fn new(x: usize, y: usize, fill: T) -> Arr2<T> {
+        Arr2 {
+            items: vec![vec![fill; y]; x],
+            x,
+            y,
         }
     }
 }
@@ -48,6 +69,19 @@ impl<T> Index<usize> for Arr3<T> {
 }
 
 impl<T> IndexMut<usize> for Arr3<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.items[index]
+    }
+}
+
+impl<T> Index<usize> for Arr2<T> {
+    type Output = Vec<Vec<T>>;
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.items[index]
+    }
+}
+
+impl<T> IndexMut<usize> for Arr2<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.items[index]
     }
