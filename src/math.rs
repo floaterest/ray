@@ -1,6 +1,6 @@
-use std::ops::{Add, Index, IndexMut, Mul, Sub};
+use std::ops::{Add, Index, IndexMut, Mul, Neg, Sub};
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Vec3<T> {
     pub x: T,
     pub y: T,
@@ -10,16 +10,17 @@ pub struct Vec3<T> {
 #[derive(Debug)]
 pub struct Arr3<T> {
     items: Vec<Vec<Vec<T>>>,
-    x: usize,
-    y: usize,
-    z: usize,
+    pub x: usize,
+    pub y: usize,
+    pub z: usize,
 }
 
 #[derive(Debug)]
 pub struct Arr2<T> {
     items: Vec<Vec<T>>,
-    x: usize,
-    y: usize,
+    pub x: usize,
+    pub y: usize,
+    pub ratio: f64,
 }
 
 pub fn to_unit(vec3: Vec3<f64>) -> Vec3<f64> {
@@ -57,6 +58,7 @@ impl<T: Clone> Arr2<T> {
             items: vec![vec![fill; y]; x],
             x,
             y,
+            ratio: (y as f64) / (x as f64),
         }
     }
 }
@@ -91,10 +93,21 @@ impl<T> IndexMut<usize> for Arr2<T> {
 //#endregion index
 
 //#region vec operations
-impl Add for Vec3<f64> {
+impl Neg for Vec3<f64> {
     type Output = Self;
-    fn add(self, other: Self) -> Self {
-        Self {
+    fn neg(self) -> Self {
+        Vec3 {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+        }
+    }
+}
+
+impl Add for Vec3<f64> {
+    type Output = Vec3<f64>;
+    fn add(self, other: Self) -> Vec3<f64> {
+        Vec3 {
             x: self.x + other.x,
             y: self.y + other.y,
             z: self.z + other.z,
@@ -103,9 +116,9 @@ impl Add for Vec3<f64> {
 }
 
 impl Sub for Vec3<f64> {
-    type Output = Self;
-    fn sub(self, other: Self) -> Self {
-        Self {
+    type Output = Vec3<f64>;
+    fn sub(self, other: Self) -> Vec3<f64> {
+        Vec3 {
             x: self.x - other.x,
             y: self.y - other.y,
             z: self.z - other.z,
@@ -113,11 +126,10 @@ impl Sub for Vec3<f64> {
     }
 }
 
-/// scaling
 impl Mul<f64> for Vec3<f64> {
     type Output = Self;
-    fn mul(self, scale: f64) -> Self {
-        Self {
+    fn mul(self, scale: f64) -> Vec3<f64> {
+        Vec3 {
             x: self.x * scale,
             y: self.y * scale,
             z: self.z * scale,
@@ -126,12 +138,12 @@ impl Mul<f64> for Vec3<f64> {
 }
 
 /// cross product
-impl Mul for &Vec3<f64> {
+impl Mul for Vec3<f64> {
     type Output = Vec3<f64>;
     fn mul(self, other: Self) -> Vec3<f64> {
         Vec3 {
             x: self.y * other.z - self.z - other.y,
-            y: self.x * other.z - self.z * other.x,
+            y: self.z * other.x - self.x * other.z,
             z: self.x * other.y - self.y * other.x,
         }
     }
