@@ -142,7 +142,7 @@ impl Mul for Vec3<f64> {
     type Output = Vec3<f64>;
     fn mul(self, other: Self) -> Vec3<f64> {
         Vec3 {
-            x: self.y * other.z - self.z - other.y,
+            x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
             z: self.x * other.y - self.y * other.x,
         }
