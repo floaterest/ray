@@ -1,4 +1,4 @@
-use std::ops::{Add, Index, IndexMut, Mul, Neg, Sub};
+use std::ops::{Add, Index, IndexMut, Mul, Sub};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vec3<T> {
