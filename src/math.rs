@@ -1,4 +1,4 @@
-use std::ops::{Add, Index, IndexMut, Mul, Sub};
+use std::ops::{Add, AddAssign, Index, IndexMut, Mul, Sub};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vec3<T> {
@@ -55,7 +55,7 @@ impl<T: Clone> Arr3<T> {
 impl<T: Clone> Arr2<T> {
     pub fn new(x: usize, y: usize, fill: T) -> Arr2<T> {
         Arr2 {
-            items: vec![vec![fill; y]; x],
+            items: vec![vec![fill; x]; y],
             x,
             y,
             ratio: (y as f64) / (x as f64),
@@ -101,6 +101,14 @@ impl Add for Vec3<f64> {
             y: self.y + other.y,
             z: self.z + other.z,
         }
+    }
+}
+
+impl AddAssign for Vec3<f64> {
+    fn add_assign(&mut self, rhs: Self) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+        self.z += rhs.z;
     }
 }
 
