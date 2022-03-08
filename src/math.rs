@@ -93,17 +93,6 @@ impl<T> IndexMut<usize> for Arr2<T> {
 //#endregion index
 
 //#region vec operations
-impl Neg for Vec3<f64> {
-    type Output = Self;
-    fn neg(self) -> Self {
-        Vec3 {
-            x: -self.x,
-            y: -self.y,
-            z: -self.z,
-        }
-    }
-}
-
 impl Add for Vec3<f64> {
     type Output = Vec3<f64>;
     fn add(self, other: Self) -> Vec3<f64> {
