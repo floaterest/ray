@@ -1,18 +1,24 @@
 use std::f64::consts::FRAC_PI_2;
-use crate::math::{Arr2, Arr3, to_unit, to_vec3, Vec3};
+use crate::block::Block;
+use crate::math::{Arr2, Arr3, Vec3, to_vec3};
 
 const BORDER_SIZE: f64 = 0.03;
+const EPSILON: f64 = 0.01;
 
 #[derive(Debug)]
 pub struct Cam {
+    /// current position
     pub pos: Vec3<f64>,
+    /// azimuthal angle
     pub theta: f64,
+    /// polar angle
     pub phi: f64,
     /// fov/2
     pub fov2: f64,
 }
 
 fn is_outside(pos: &Vec3<f64>, x: usize, y: usize, z: usize) -> bool {
+    //! return whether pos is out of bound
     if pos.x < 0.0 || pos.y < 0.0 || pos.z < 0.0 {
         return true;
     }
@@ -23,6 +29,7 @@ fn is_outside(pos: &Vec3<f64>, x: usize, y: usize, z: usize) -> bool {
 }
 
 fn is_border(pos: &Vec3<f64>) -> bool {
+    //! return whether pos it near a border (i.e. grid line)
     let mut c = 0;
     if (pos.x - pos.x.round()).abs() < BORDER_SIZE {
         c += 1;
@@ -37,40 +44,57 @@ fn is_border(pos: &Vec3<f64>) -> bool {
     c >= 2
 }
 
-fn ray_trace(mut pos: Vec3<f64>, dir: Vec3<f64>, arr3: &Arr3<bool>) -> u8 {
-    let eps = 0.01f64;
+fn ray_trace(mut pos: Vec3<f64>, dir: &Vec3<f64>, arr3: &Arr3<Block>) -> u8 {
+    //! shoot a ray and see where it hits
     while !is_outside(&pos, arr3.x, arr3.y, arr3.z) {
-        let not_air = arr3[pos.x as usize][pos.y as usize][pos.z as usize];
-        if not_air {
-            return if is_border(&pos) { b'.' } else { b'@' };
+        match arr3[pos.z as usize][pos.y as usize][pos.x as usize] {
+            Block::Solid => {
+                return if is_border(&pos) { b'.' } else { b'@' };
+            }
+            _ => pos += *dir * EPSILON,
         }
-        pos += dir * eps;
     }
     b' '
 }
 
-impl Cam {
-    pub fn picture(self, scr: &mut Arr2<u8>, arr3: &Arr3<bool>) {
-        let m1: f64 = (scr.y - 1) as f64;
-        let k1: f64 = (scr.x - 1) as f64;
+pub fn render(scr: &mut Arr2<u8>, cam: &Cam, map_data: &Arr3<Block>) {
+    //! generate current view by mutating scr
+    //! assume distance between eye and screen is 1
 
-        let tn: Vec3<f64> = to_unit(to_vec3(self.theta, self.phi));
-        let vn: Vec3<f64> = to_unit(to_vec3(self.theta, self.phi - FRAC_PI_2));
-        let bn: Vec3<f64> = vn * tn;
+    // distance between the center of the highest and the lowest pixel
+    // => distance between top and bottom ray
+    let h = (scr.y - 1) as f64;
+    // between left and right ray
+    let w = (scr.x - 1) as f64;
 
-        let gx: f64 = self.fov2.tan();
-        let gy: f64 = gx * m1 / k1;
+    // normalised vector towards center of the screen (i.e. view angle)
+    let tn = to_vec3(cam.theta, cam.phi);
+    // normalised vector towards the top of the camera (relative to view angle)
+    // assume the top is above (absolute) the camera
+    // (will change later)
+    let vn = to_vec3(cam.theta, cam.phi - FRAC_PI_2);
+    // normalised vector towards the left of the camera
+    // (according to the right-hand rule of cross product)
+    let bn = vn * tn;
 
-        let mut py: Vec3<f64> = tn + bn * gx + vn * gy;
-        let qx: Vec3<f64> = bn * (-2.0 * gx / k1);
-        let qy: Vec3<f64> = vn * (-2.0 * gy / m1);
-        for y in 0..scr.y {
-            let mut px = Vec3 { ..py };
-            for x in 0..scr.x {
-                scr[y][x] = ray_trace(self.pos, px, &arr3);
-                px += qx;
-            }
-            py += qy;
+    // length of half of the screen
+    let gx = cam.fov2.tan();
+    let gy = gx * h / w;
+
+    // ray at (0,0), but will be mutated to (0,y) for 0 <= y < scr.y
+    let mut py = tn + bn * gx + vn * gy;
+    // next-pixel shifting vector
+    let qx = bn * (-2.0 * gx / w);
+    let qy = vn * (-2.0 * gy / h);
+
+    for y in 0..scr.y {
+        // copy vector, used for shifting
+        let mut px = Vec3 { ..py };
+
+        for x in 0..scr.x {
+            scr[y][x] = ray_trace(cam.pos, &px, &map_data);
+            px += qx;
         }
+        py += qy;
     }
 }

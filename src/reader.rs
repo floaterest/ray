@@ -3,6 +3,7 @@ use std::io::{BufRead, BufReader, Result};
 use std::path::PathBuf;
 use std::str::FromStr;
 use termion::input::TermRead;
+use crate::block::Block;
 use crate::math::Arr3;
 
 fn take_from_line<T: FromStr>(mut r: &mut BufReader<File>, n: usize) -> Vec<T> {
@@ -12,15 +13,15 @@ fn take_from_line<T: FromStr>(mut r: &mut BufReader<File>, n: usize) -> Vec<T> {
         .collect::<Vec<T>>()
 }
 
-pub fn read_text(fpath: &PathBuf) -> Result<(Arr3<bool>, f64, f64, f64)> {
+pub fn read_text(fpath: &PathBuf) -> Result<(Arr3<Block>, f64, f64, f64)> {
     let mut r = BufReader::new(File::open(&fpath)?);
 
-    // dimension
+    // dimension (x,y,z)
     let d = take_from_line::<usize>(&mut r, 3);
-    // player initial position
+    // player initial position (x,y,z)
     let pos = take_from_line::<f64>(&mut r, 3);
     // initialise map
-    let mut blocks = Arr3::new(d[0], d[1], d[2], false);
+    let mut data = Arr3::new(d[0], d[1], d[2], Block::Air);
 
     // read map data from file
     let mut y = 0;
@@ -32,7 +33,7 @@ pub fn read_text(fpath: &PathBuf) -> Result<(Arr3<bool>, f64, f64, f64)> {
             for x in 0..d[0] {
                 // if is not air
                 if bytes[x] != b'0' {
-                    blocks[x][y][z] = true;
+                    data[z][y][x] = Block::Solid;
                 }
             }
             y += 1;
@@ -43,5 +44,5 @@ pub fn read_text(fpath: &PathBuf) -> Result<(Arr3<bool>, f64, f64, f64)> {
         }
     }
 
-    Ok((blocks, pos[0], pos[1], pos[2]))
+    Ok((data, pos[0], pos[1], pos[2]))
 }
