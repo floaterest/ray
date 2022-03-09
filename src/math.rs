@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Index, IndexMut, Mul, Sub};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Vec3<T> {
     pub x: T,
     pub y: T,
@@ -20,19 +20,12 @@ pub struct Arr2<T> {
     items: Vec<Vec<T>>,
     pub x: usize,
     pub y: usize,
-    pub ratio: f64,
-}
-
-pub fn to_unit(vec3: Vec3<f64>) -> Vec3<f64> {
-    let len = (vec3.x * vec3.x + vec3.y * vec3.y + vec3.z * vec3.z).sqrt();
-    Vec3 {
-        x: vec3.x / len,
-        y: vec3.y / len,
-        z: vec3.z / len,
-    }
 }
 
 pub fn to_vec3(theta: f64, phi: f64) -> Vec3<f64> {
+    //! convert (1, θ, φ) to (x, y, z) (normalised)
+    //! uses the *mathematics* notation, i.e. azimuthal angle θ, polar angle φ
+    //! https://en.wikipedia.org/wiki/Spherical_coordinate_system
     Vec3 {
         x: phi.sin() * theta.cos(),
         y: phi.sin() * theta.sin(),
@@ -40,11 +33,11 @@ pub fn to_vec3(theta: f64, phi: f64) -> Vec3<f64> {
     }
 }
 
-//#region impl
+//#region init
 impl<T: Clone> Arr3<T> {
     pub fn new(x: usize, y: usize, z: usize, fill: T) -> Arr3<T> {
         Arr3 {
-            items: vec![vec![vec![fill; z]; y]; x],
+            items: vec![vec![vec![fill; x]; y]; z],
             x,
             y,
             z,
@@ -58,11 +51,10 @@ impl<T: Clone> Arr2<T> {
             items: vec![vec![fill; x]; y],
             x,
             y,
-            ratio: (y as f64) / (x as f64),
         }
     }
 }
-//#endregion impl
+//#endregion init
 
 //#region index
 impl<T> Index<usize> for Arr3<T> {
@@ -93,18 +85,18 @@ impl<T> IndexMut<usize> for Arr2<T> {
 //#endregion index
 
 //#region vec operations
-impl Add for Vec3<f64> {
-    type Output = Vec3<f64>;
-    fn add(self, other: Self) -> Vec3<f64> {
-        Vec3 {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.z + other.z,
+impl<T: Add<Output=T>> Add for Vec3<T> {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self {
+        Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z,
         }
     }
 }
 
-impl AddAssign for Vec3<f64> {
+impl<T: AddAssign> AddAssign for Vec3<T> {
     fn add_assign(&mut self, rhs: Self) {
         self.x += rhs.x;
         self.y += rhs.y;
@@ -112,21 +104,22 @@ impl AddAssign for Vec3<f64> {
     }
 }
 
-impl Sub for Vec3<f64> {
-    type Output = Vec3<f64>;
-    fn sub(self, other: Self) -> Vec3<f64> {
-        Vec3 {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z,
+impl<T: Sub<Output=T>> Sub for Vec3<T> {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self {
+        Self {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+            z: self.z - rhs.z,
         }
     }
 }
 
-impl Mul<f64> for Vec3<f64> {
+/// scaling
+impl<T: Mul<Output=T>> Mul<T> for Vec3<T> where T: Copy {
     type Output = Self;
-    fn mul(self, scale: f64) -> Vec3<f64> {
-        Vec3 {
+    fn mul(self, scale: T) -> Self {
+        Self {
             x: self.x * scale,
             y: self.y * scale,
             z: self.z * scale,
@@ -135,13 +128,13 @@ impl Mul<f64> for Vec3<f64> {
 }
 
 /// cross product
-impl Mul for Vec3<f64> {
-    type Output = Vec3<f64>;
-    fn mul(self, other: Self) -> Vec3<f64> {
-        Vec3 {
-            x: self.y * other.z - self.z * other.y,
-            y: self.z * other.x - self.x * other.z,
-            z: self.x * other.y - self.y * other.x,
+impl<T: Mul<Output=T> + Sub<Output=T>> Mul for Vec3<T> where T: Copy {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self {
+        Self {
+            x: self.y * rhs.z - self.z * rhs.y,
+            y: self.z * rhs.x - self.x * rhs.z,
+            z: self.x * rhs.y - self.y * rhs.x,
         }
     }
 }
