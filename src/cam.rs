@@ -40,7 +40,8 @@ fn is_border(pos: &Vec3<f64>) -> bool {
     if (pos.z - pos.z.round()).abs() < BORDER_SIZE {
         c += 1;
     }
-
+    let a = 0;
+    let b:i32 = 10;
     c >= 2
 }
 
