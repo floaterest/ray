@@ -1,9 +1,7 @@
 use std::f64::consts::FRAC_PI_2;
-use crate::block::Block;
-use crate::math::{Arr2, Arr3, Vec3, to_vec3};
+use crate::math::{Arr2, Arr3, Vec3, to_nom_vec3};
 
 const BORDER_SIZE: f64 = 0.03;
-const EPSILON: f64 = 0.01;
 
 #[derive(Debug)]
 pub struct Cam {
@@ -40,25 +38,10 @@ fn is_border(pos: &Vec3<f64>) -> bool {
     if (pos.z - pos.z.round()).abs() < BORDER_SIZE {
         c += 1;
     }
-    let a = 0;
-    let b:i32 = 10;
     c >= 2
 }
 
-fn ray_trace(mut pos: Vec3<f64>, dir: &Vec3<f64>, arr3: &Arr3<Block>) -> u8 {
-    //! shoot a ray and see where it hits
-    while !is_outside(&pos, arr3.x, arr3.y, arr3.z) {
-        match arr3[pos.z as usize][pos.y as usize][pos.x as usize] {
-            Block::Solid => {
-                return if is_border(&pos) { b'.' } else { b'@' };
-            }
-            _ => pos += *dir * EPSILON,
-        }
-    }
-    b' '
-}
-
-pub fn render(scr: &mut Arr2<u8>, cam: &Cam, map_data: &Arr3<Block>) {
+pub fn render(scr: &mut Arr2<u8>, cam: &Cam, map_data: &Arr3<bool>) {
     //! generate current view by mutating scr
     //! assume distance between eye and screen is 1
 
@@ -69,11 +52,11 @@ pub fn render(scr: &mut Arr2<u8>, cam: &Cam, map_data: &Arr3<Block>) {
     let w = (scr.x - 1) as f64;
 
     // normalised vector towards center of the screen (i.e. view angle)
-    let tn = to_vec3(cam.theta, cam.phi);
+    let tn = to_nom_vec3(cam.theta, cam.phi);
     // normalised vector towards the top of the camera (relative to view angle)
     // assume the top is above (absolute) the camera
     // (will change later)
-    let vn = to_vec3(cam.theta, cam.phi - FRAC_PI_2);
+    let vn = to_nom_vec3(cam.theta, cam.phi - FRAC_PI_2);
     // normalised vector towards the left of the camera
     // (according to the right-hand rule of cross product)
     let bn = vn * tn;
@@ -88,13 +71,55 @@ pub fn render(scr: &mut Arr2<u8>, cam: &Cam, map_data: &Arr3<Block>) {
     let qx = bn * (-2.0 * gx / w);
     let qy = vn * (-2.0 * gy / h);
 
+    let pos = &cam.pos;
+
     for y in 0..scr.y {
         // copy vector, used for shifting
-        let mut px = Vec3 { ..py };
+        let mut ray = Vec3 { ..py };
 
         for x in 0..scr.x {
-            scr[y][x] = ray_trace(cam.pos, &px, &map_data);
-            px += qx;
+            // scr[y][x] = ray_trace(cam.pos, &ray, &map_data);
+            let mut map = Vec3 {
+                x: pos.x.floor(),
+                y: pos.y.floor(),
+                z: pos.x.floor(),
+            };
+            let delta = Vec3 {
+                x: if ray.x == 0.0 { 1e30 } else { 1.0 / ray.x.abs() },
+                y: if ray.y == 0.0 { 1e30 } else { 1.0 / ray.y.abs() },
+                z: if ray.z == 0.0 { 1e30 } else { 1.0 / ray.z.abs() },
+            };
+            let step = Vec3 {
+                x: if ray.x < 0.0 { -1.0 } else { 1.0 },
+                y: if ray.y < 0.0 { -1.0 } else { 1.0 },
+                z: if ray.z < 0.0 { -1.0 } else { 1.0 },
+            };
+            let mut side = Vec3 {
+                x: (pos.x - map.x).abs() * delta.x,
+                y: (pos.y - map.y).abs() * delta.y,
+                z: (pos.z - map.z).abs() * delta.z,
+            };
+
+            scr[y][x] = b' ';
+            while !is_outside(&map, map_data.x, map_data.y, map_data.z) {
+                if map_data[map.z as usize][map.y as usize][map.x as usize] {
+                    // scr[y][x] = if is_border(&side) { b'.' } else { b'@' };
+                    scr[y][x] = b'#';
+                    break;
+                }
+                if side.x < side.y.min(side.z) {
+                    side.x += delta.x;
+                    map.x += step.x;
+                } else if side.y < side.x.min(side.z) {
+                    side.y += delta.y;
+                    map.y += step.y;
+                } else {
+                    side.z += delta.z;
+                    map.z += step.z;
+                }
+            }
+
+            ray += qx;
         }
         py += qy;
     }
