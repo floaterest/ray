@@ -26,7 +26,7 @@ fn main() -> Result<()> {
         // phi: FRAC_PI_2,
         theta: 0.0,
         phi: 0.0,
-        fov2: FRAC_PI_4,
+        fov2: 1.0,
     };
     let mut scr: Arr2<u8> = Arr2::new(100, 40, b' ');
 
