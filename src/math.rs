@@ -22,7 +22,7 @@ pub struct Arr2<T> {
     pub y: usize,
 }
 
-pub fn to_vec3(theta: f64, phi: f64) -> Vec3<f64> {
+pub fn to_nom_vec3(theta: f64, phi: f64) -> Vec3<f64> {
     //! convert (1, θ, φ) to (x, y, z) (normalised)
     //! uses the *mathematics* notation, i.e. azimuthal angle θ, polar angle φ
     //! https://en.wikipedia.org/wiki/Spherical_coordinate_system
