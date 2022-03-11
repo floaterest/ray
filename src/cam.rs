@@ -103,8 +103,7 @@ pub fn render(scr: &mut Arr2<u8>, cam: &Cam, map_data: &Arr3<bool>) {
             scr[y][x] = b' ';
             while !is_outside(&map, map_data.x, map_data.y, map_data.z) {
                 if map_data[map.z as usize][map.y as usize][map.x as usize] {
-                    // scr[y][x] = if is_border(&side) { b'.' } else { b'@' };
-                    scr[y][x] = b'#';
+                    scr[y][x] = if is_border(&side) { b'.' } else { b'@' };
                     break;
                 }
                 if side.x < side.y.min(side.z) {
