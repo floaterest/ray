@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::io::{Result, stdin, stdout, Write};
 use std::env;
 // use std::f64::consts::{FRAC_PI_2, FRAC_PI_4};
-use std::f64::consts::{FRAC_PI_4};
+// use std::f64::consts::{FRAC_PI_4};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
@@ -13,9 +13,8 @@ use crate::reader::read_text;
 mod math;
 mod cam;
 mod reader;
-mod block;
 
-fn main() -> Result<()> {
+fn run() -> Result<()> {
     let args: Vec<String> = env::args().skip(1).collect();
 
     let (data, x, y, z) = read_text(&PathBuf::from(&args[0]))?;
@@ -54,4 +53,8 @@ fn main() -> Result<()> {
     stdout.write("\n".as_bytes()).unwrap();
     stdout.flush().unwrap();
     Ok(())
+}
+
+fn main() {
+    run().unwrap();
 }
