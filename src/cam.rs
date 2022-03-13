@@ -1,12 +1,13 @@
 use std::f64::consts::FRAC_PI_2;
-use crate::math::{Arr2, Arr3, Vec3, to_nom_vec3};
+use crate::Arr4;
+use crate::math::{Arr2, Arr3, Vec3, to_nom_vec3, Vec4};
 
 const BORDER_SIZE: f64 = 0.03;
 
 #[derive(Debug)]
 pub struct Cam {
     /// current position
-    pub pos: Vec3<f64>,
+    pub pos: Vec4<f64>,
     /// azimuthal angle
     pub theta: f64,
     /// polar angle
@@ -41,7 +42,7 @@ fn is_border(pos: &Vec3<f64>) -> bool {
     c >= 2
 }
 
-pub fn render(scr: &mut Arr2<u8>, cam: &Cam, map_data: &Arr3<bool>) {
+pub fn render(scr: &mut Arr2<u8>, cam: &Cam, arr4: &Arr4) {
     //! generate current view by mutating scr
     //! assume distance between eye and screen is 1
 
@@ -78,7 +79,6 @@ pub fn render(scr: &mut Arr2<u8>, cam: &Cam, map_data: &Arr3<bool>) {
         let mut ray = Vec3 { ..py };
 
         for x in 0..scr.x {
-            // scr[y][x] = ray_trace(cam.pos, &ray, &map_data);
             let mut map = Vec3 {
                 x: pos.x.floor(),
                 y: pos.y.floor(),
@@ -101,8 +101,8 @@ pub fn render(scr: &mut Arr2<u8>, cam: &Cam, map_data: &Arr3<bool>) {
             };
 
             scr[y][x] = b' ';
-            while !is_outside(&map, map_data.x, map_data.y, map_data.z) {
-                if map_data[map.z as usize][map.y as usize][map.x as usize] {
+            while !is_outside(&map, arr4.x, arr4.y, arr4.z) {
+                if (arr4.at(map.x as usize, map.y as usize, map.z as usize, pos.w as usize) & 1) == 1 {
                     scr[y][x] = if is_border(&side) { b'.' } else { b'@' };
                     break;
                 }
