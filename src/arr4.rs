@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{Read, Result, Write};
+use std::ops::Index;
 use std::path::Path;
 use crate::scanner::Scanner;
 
@@ -40,14 +41,18 @@ impl Arr4 {
         let mut f = File::open(path)?;
         let mut buf = [0u8; 32];
         f.read(&mut buf)?;
+
         let (x, y, z, w) = (
             u64::from_be_bytes(buf[..8].try_into().unwrap()) as usize,
             u64::from_be_bytes(buf[8..16].try_into().unwrap()) as usize,
             u64::from_be_bytes(buf[16..24].try_into().unwrap()) as usize,
             u64::from_be_bytes(buf[24..].try_into().unwrap()) as usize,
         );
+
         let mut a = Self::with_capacity(x, y, z, w);
-        f.read(&mut a.content);
+        Read::by_ref(&mut f).take((x * y * z * w) as u64).read_to_end(&mut a.content);
+
+        assert_ne!(a.content.len(), 0);
         Ok(a)
     }
 
@@ -68,7 +73,7 @@ impl Arr4 {
         let mut f = File::create(path)?;
         // write x y z w
         for d in [self.x as u64, self.y as u64, self.z as u64, self.w as u64] {
-            f.write(&d.to_be_bytes());
+            f.write(&d.to_be_bytes())?;
         }
         // write content
         f.write(&self.content)?;
