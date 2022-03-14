@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Index, IndexMut, Mul, Sub};
+use std::ops::{Add, AddAssign, Index, Mul, Sub};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vec4<T> {
@@ -15,23 +15,8 @@ pub struct Vec3<T> {
     pub z: T,
 }
 
-#[derive(Debug)]
-pub struct Arr3<T> {
-    items: Vec<Vec<Vec<T>>>,
-    pub x: usize,
-    pub y: usize,
-    pub z: usize,
-}
-
-#[derive(Debug)]
-pub struct Arr2<T> {
-    items: Vec<Vec<T>>,
-    pub x: usize,
-    pub y: usize,
-}
-
-pub fn to_nom_vec3(theta: f64, phi: f64) -> Vec3<f64> {
-    //! convert (1, θ, φ) to (x, y, z) (normalised)
+pub fn to_vec3n(theta: f64, phi: f64) -> Vec3<f64> {
+    //! convert (1, θ, φ) to (x, y, z) normalised
     //! uses the *mathematics* notation, i.e. azimuthal angle θ, polar angle φ
     //! https://en.wikipedia.org/wiki/Spherical_coordinate_system
     Vec3 {
@@ -41,58 +26,29 @@ pub fn to_nom_vec3(theta: f64, phi: f64) -> Vec3<f64> {
     }
 }
 
-//#region init
-impl<T: Clone> Arr3<T> {
-    pub fn new(x: usize, y: usize, z: usize, fill: T) -> Arr3<T> {
-        Arr3 {
-            items: vec![vec![vec![fill; x]; y]; z],
-            x,
-            y,
-            z,
+//#region impl Vec3<T>
+impl<T> Vec3<T> {
+    pub fn compose<F: Fn(u8) -> T>(f: F) -> Self {
+        Self {
+            x: f(1),
+            y: f(2),
+            z: f(3),
         }
     }
 }
 
-impl<T: Clone> Arr2<T> {
-    pub fn new(x: usize, y: usize, fill: T) -> Arr2<T> {
-        Arr2 {
-            items: vec![vec![fill; x]; y],
-            x,
-            y,
+impl<T> Index<u8> for Vec3<T> {
+    type Output = T;
+    fn index(&self, index: u8) -> &Self::Output {
+        match index {
+            1 => &self.x,
+            2 => &self.y,
+            3 => &self.z,
+            i => panic!("{} is not a valid index for 3d vec, must be in [1,3]", i),
         }
     }
 }
-//#endregion init
 
-//#region index
-impl<T> Index<usize> for Arr3<T> {
-    type Output = Vec<Vec<T>>;
-    fn index(&self, index: usize) -> &Self::Output {
-        &self.items[index]
-    }
-}
-
-impl<T> IndexMut<usize> for Arr3<T> {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        &mut self.items[index]
-    }
-}
-
-impl<T> Index<usize> for Arr2<T> {
-    type Output = Vec<T>;
-    fn index(&self, index: usize) -> &Self::Output {
-        &self.items[index]
-    }
-}
-
-impl<T> IndexMut<usize> for Arr2<T> {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        &mut self.items[index]
-    }
-}
-//#endregion index
-
-//#region vec operations
 impl<T: Add<Output=T>> Add for Vec3<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
@@ -146,4 +102,19 @@ impl<T: Mul<Output=T> + Sub<Output=T>> Mul for Vec3<T> where T: Copy {
         }
     }
 }
-//#endregion vec operations
+//#endregion impl Vec3<T>
+
+//#region impl Vec4<T>
+impl<T> Index<u8> for Vec4<T> {
+    type Output = T;
+    fn index(&self, index: u8) -> &Self::Output {
+        match index {
+            1 => &self.x,
+            2 => &self.y,
+            3 => &self.z,
+            4 => &self.w,
+            i => panic!("{} is not a valid index for 4d vec, must be in [1,4]", i),
+        }
+    }
+}
+//#endregion impl Vec4<T>
