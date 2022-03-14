@@ -49,14 +49,10 @@ impl<T> Index<u8> for Vec3<T> {
     }
 }
 
-impl<T: Add<Output=T>> Add for Vec3<T> {
-    type Output = Self;
-    fn add(self, rhs: Self) -> Self {
-        Self {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-            z: self.z + rhs.z,
-        }
+impl<T: Add<Output=T>> Add for Vec3<T> where T: Copy {
+    type Output = Vec3<T>;
+    fn add(self, rhs: Self) -> Self::Output {
+        Vec3::compose(|i| self[i] + rhs[i])
     }
 }
 
@@ -68,14 +64,10 @@ impl<T: AddAssign> AddAssign for Vec3<T> {
     }
 }
 
-impl<T: Sub<Output=T>> Sub for Vec3<T> {
+impl<T: Sub<Output=T>> Sub for Vec3<T> where T: Copy {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
-        Self {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-            z: self.z - rhs.z,
-        }
+        Vec3::compose(|i| self[i] - rhs[i])
     }
 }
 
@@ -83,11 +75,7 @@ impl<T: Sub<Output=T>> Sub for Vec3<T> {
 impl<T: Mul<Output=T>> Mul<T> for Vec3<T> where T: Copy {
     type Output = Self;
     fn mul(self, scale: T) -> Self {
-        Self {
-            x: self.x * scale,
-            y: self.y * scale,
-            z: self.z * scale,
-        }
+        Vec3::compose(|i| self[i] * scale)
     }
 }
 
