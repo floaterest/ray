@@ -1,7 +1,9 @@
-use std::io::{BufReader, Result, Read, BufRead};
-use std::iter::Peekable;
-use std::mem::transmute;
-use std::str::{FromStr, SplitWhitespace};
+use std::{
+    io::{BufReader, Result, Read, BufRead},
+    iter::Peekable,
+    mem::transmute,
+    str::{FromStr, SplitWhitespace},
+};
 
 pub struct Scanner<R: Read> {
     pub reader: BufReader<R>,
