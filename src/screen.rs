@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::f64::consts::FRAC_PI_2;
 use std::ops::{Index, IndexMut};
 use crate::{Cam, Map};
@@ -77,8 +78,8 @@ impl Screen {
                 let step = Vec3::compose(|i| if ray[i] < 0.0 { -1.0 } else { 1.0 });
                 let mut block = Vec3::compose(|i| pos[i].floor());
                 let mut side = Vec3::compose(|i| (pos[i] - block[i]).abs() * delta[i]);
-
-                while map.is_inside(block.x, block.y, block.z, pos.z) {
+                let mut dist = 0.0;
+                while map.is_inside(block.x, block.y, block.z, pos.w) {
                     let hit = map.index(
                         block.x as usize,
                         block.y as usize,
@@ -87,21 +88,25 @@ impl Screen {
                     );
                     if (hit & 1) == 1 {
                         // is opaque
-                        self[y][x] = if is_border(&side) { b'.' } else { b'@' };
+                        let p = Vec3::compose(|i| pos[i] + ray[i] * dist);
+                        self[y][x] = if is_border(&p) { b'.' } else { b'@' };
                         break;
                     }
+
                     if side.x < side.y.min(side.z) {
+                        dist = side.x;
                         side.x += delta.x;
                         block.x += step.x;
                     } else if side.y < side.x.min(side.z) {
+                        dist = side.y;
                         side.y += delta.y;
                         block.y += step.y;
                     } else {
+                        dist = side.z;
                         side.z += delta.z;
                         block.z += step.z;
                     }
                 }
-
                 ray += qx;
             }
             py += qy;
