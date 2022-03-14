@@ -1,10 +1,7 @@
-use std::fs::File;
-use std::io::{Read, Result, Write};
-use std::ops::Index;
-use std::path::Path;
+use std::{fs::File, io::{Read, Result, Write}, path::Path};
 use crate::scanner::Scanner;
 
-pub struct Arr4 {
+pub struct Map {
     pub x: usize,
     pub y: usize,
     pub z: usize,
@@ -15,7 +12,7 @@ pub struct Arr4 {
     xyz: usize,
 }
 
-impl Arr4 {
+impl Map {
     pub fn from(x: usize, y: usize, z: usize, w: usize, content: Vec<u8>) -> Self {
         Self {
             x,
@@ -49,11 +46,11 @@ impl Arr4 {
             u64::from_be_bytes(buf[24..].try_into().unwrap()) as usize,
         );
 
-        let mut a = Self::with_capacity(x, y, z, w);
-        Read::by_ref(&mut f).take((x * y * z * w) as u64).read_to_end(&mut a.content);
+        let mut map = Self::with_capacity(x, y, z, w);
+        Read::by_ref(&mut f).take((x * y * z * w) as u64).read_to_end(&mut map.content)?;
 
-        assert_ne!(a.content.len(), 0);
-        Ok(a)
+        assert_ne!(map.content.len(), 0);
+        Ok(map)
     }
 
     pub fn with_capacity(x: usize, y: usize, z: usize, w: usize) -> Self {
@@ -80,8 +77,13 @@ impl Arr4 {
         Ok(())
     }
 
-    pub fn at(&self, x: usize, y: usize, z: usize, w: usize) -> &u8 {
+    pub fn index(&self, x: usize, y: usize, z: usize, w: usize) -> &u8 {
         //! return &item at (x,y,z,w)
         &self.content[x + y * self.x + z * self.xy + w * self.xyz]
+    }
+
+    pub fn is_inside(&self, x: f64, y: f64, z: f64, w: f64) -> bool {
+        x >= 0.0 && y >= 0.0 && z >= 0.0 && w >= 0.0
+            && x < self.x as f64 && y < self.y as f64 && z < self.z as f64 && w < self.w as f64
     }
 }
