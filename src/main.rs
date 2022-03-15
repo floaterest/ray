@@ -1,7 +1,6 @@
 use std::io::{Result, stdin, stdout, Write};
 use std::env;
-use termion::{event::Key, raw::IntoRawMode};
-use termion::input::TermRead;
+use termion::{event::Key, raw::IntoRawMode, input::TermRead, terminal_size};
 
 use crate::map::Map;
 use crate::cam::Cam;
@@ -24,7 +23,8 @@ fn run<W: Write>(w: &mut W) -> Result<()> {
         phi: 0.0,
         fov2: 1.0,
     };
-    let mut scr = Screen::new(500, 120, b' ');
+    let (width, height) = terminal_size()?;
+    let mut scr = Screen::new(width as usize, height as usize, b' ');
 
     let input = stdin();
     for c in input.keys() {
