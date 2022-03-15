@@ -27,13 +27,19 @@ pub fn to_vec3n(theta: f64, phi: f64) -> Vec3<f64> {
 }
 
 //#region impl Vec3<T>
-impl<T> Vec3<T> {
+impl<T> Vec3<T> where T: Copy {
     pub fn compose<F: Fn(u8) -> T>(f: F) -> Self {
         Self {
             x: f(1),
             y: f(2),
             z: f(3),
         }
+    }
+}
+
+impl<T> Vec3<T> where T: Copy + Mul<Output=T> + Add<Output=T> {
+    pub fn dot(&self, &rhs: &Self) -> T {
+        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 }
 
