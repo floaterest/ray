@@ -55,42 +55,37 @@ impl Screen {
         let w = (self.x - 1) as f64;
         let h = (self.y - 1) as f64;
 
-        // tn: eye -> center of screen
-        let tn = to_vec3n(cam.theta, cam.phi);
-        // vn: eye -> top (will change later)
-        let vn = to_vec3n(cam.theta, cam.phi - FRAC_PI_2);
-        // bn: eye -> left (using right hand rule)
-        let bn = vn * tn;
+        // top x front = left (right hand rule)
+        let left = cam.top * cam.pov;
 
         // dim of screen halved
         let gx = cam.fov2.tan();
         let gy = gx * h / w;
 
         // py: eye to screen at (0,y) for 0 <= y < self.y
-        let mut py = tn + bn * gx + vn * gy;
+        let mut py = cam.pov + left * gx + cam.top * gy;
         // used to shift to the next pixel
-        let qx = bn * (-2.0 * gx / w);
-        let qy = vn * (-2.0 * gy / h);
+        let qx = left * (-2.0 * gx / w);
+        let qy = cam.top * (-2.0 * gy / h);
 
-        let pos = &cam.pos;
         for y in 0..self.y {
             let mut ray = Vec3 { ..py };
             for x in 0..self.x {
                 let delta = Vec3::compose(|i| if ray[i] == 0.0 { 1e30 } else { 1.0 / ray[i].abs() });
                 let step = Vec3::compose(|i| if ray[i] < 0.0 { -1.0 } else { 1.0 });
-                let mut block = Vec3::compose(|i| pos[i].floor());
-                let mut side = Vec3::compose(|i| (pos[i] - block[i]).abs() * delta[i]);
+                let mut block = Vec3::compose(|i| cam.pos[i].floor());
+                let mut side = Vec3::compose(|i| (cam.pos[i] - block[i]).abs() * delta[i]);
                 let mut dist = 0.0;
-                while map.is_inside(block.x, block.y, block.z, pos.w) {
+                while map.is_inside(block.x, block.y, block.z, cam.pos.w) {
                     let hit = map.index(
                         block.x as usize,
                         block.y as usize,
                         block.z as usize,
-                        pos.w as usize,
+                        cam.pos.w as usize,
                     );
                     if (hit & 1) == 1 {
                         // is opaque
-                        let p = Vec3::compose(|i| pos[i] + ray[i] * dist);
+                        let p = Vec3::compose(|i| cam.pos[i] + ray[i] * dist);
                         self[y][x] = if is_border(&p) { b'.' } else { b'@' };
                         break;
                     }
