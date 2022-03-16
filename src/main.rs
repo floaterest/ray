@@ -1,8 +1,12 @@
 use std::io::{Result, stdin, stdout, Write};
 use std::env;
 use std::f64::consts::*;
+use std::ffi::OsStr;
 use std::fs::File;
+use std::path::PathBuf;
+
 use termion::{event::Key, raw::IntoRawMode, input::TermRead, terminal_size};
+use clap::{App, Parser};
 
 use crate::map::Map;
 use crate::cam::Cam;
@@ -17,10 +21,19 @@ mod screen;
 
 const ROTATE: f64 = FRAC_PI_3 / 10.0;
 
-fn run<W: Write>(w: &mut W) -> Result<()> {
-    let args: Vec<String> = env::args().skip(1).collect();
+#[derive(Parser, Debug)]
+#[clap(about, version, author)]
+struct Args {
+    /// Map file (e.g. level.txt, level.db)
+    #[clap(parse(from_os_str))]
+    map: PathBuf,
 
-    let map = Map::from_file(String::from(&args[0]))?;
+    /// Convert map file to .db and exit
+    #[clap(short, long)]
+    convert: bool,
+}
+
+fn run<W: Write>(w: &mut W, map: Map) -> Result<()> {
     let mut cam = Cam {
         pos: Vec4 { x: 4.5, y: 4.5, z: 4.5, w: 0.0 },
         pov: Vec3 { x: 1.0, y: 0.0, z: 0.0 },
@@ -60,6 +73,24 @@ fn run<W: Write>(w: &mut W) -> Result<()> {
 }
 
 fn main() {
-    let output = stdout();
-    run(&mut output.lock().into_raw_mode().unwrap()).unwrap();
+    let args: Args = Args::parse();
+
+    if args.convert {
+        if args.map.extension() == Some(OsStr::new(&"txt")) {
+            let map = Map::from_file(&args.map).unwrap();
+            let mut path = PathBuf::from(&args.map);
+            path.set_extension("db");
+            map.save_as(path).unwrap();
+        } else {
+            eprintln!("Invalid input file, expected a txt file");
+        }
+    } else {
+        let output = stdout();
+        let mut w = output.lock().into_raw_mode().unwrap();
+        match args.map.extension().unwrap().to_str() {
+            Some("db") => run(&mut w, Map::from_file(args.map).unwrap()).unwrap(),
+            Some("txt") => run(&mut w, Map::from_text(args.map).unwrap()).unwrap(),
+            _ => eprintln!("Invalid map file, expected a txt or db file"),
+        }
+    }
 }

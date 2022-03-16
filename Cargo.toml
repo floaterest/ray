@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 termion = "*"
+clap = { version = "3.0.6", features = ["derive"] }
