@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Index, Mul, Sub};
+use std::ops::{Add, AddAssign, Index, IndexMut, Mul, Sub};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vec4<T> {
@@ -50,6 +50,17 @@ impl<T> Index<u8> for Vec3<T> {
             1 => &self.x,
             2 => &self.y,
             3 => &self.z,
+            i => panic!("{} is not a valid index for 3d vec, must be in [1,3]", i),
+        }
+    }
+}
+
+impl<T> IndexMut<u8> for Vec3<T> {
+    fn index_mut(&mut self, index: u8) -> &mut Self::Output {
+        match index {
+            1 => &mut self.x,
+            2 => &mut self.y,
+            3 => &mut self.z,
             i => panic!("{} is not a valid index for 3d vec, must be in [1,3]", i),
         }
     }

@@ -56,53 +56,53 @@ impl Screen {
         let h = (self.y - 1) as f64;
 
         // top x front = left (right hand rule)
-        let left = cam.top * cam.pov;
+        let tn = cam.pov;
+        let vn = cam.top;
+        let bn = vn * tn;
 
         // dim of screen halved
         let gx = cam.fov2.tan();
         let gy = gx * h / w;
 
         // py: eye to screen at (0,y) for 0 <= y < self.y
-        let mut py = cam.pov + left * gx + cam.top * gy;
+        let mut py = tn + bn * gx + vn * gy;
         // used to shift to the next pixel
-        let qx = left * (-2.0 * gx / w);
-        let qy = cam.top * (-2.0 * gy / h);
+        let qx = bn * (-2.0 * gx / w);
+        let qy = vn * (-2.0 * gy / h);
 
         for y in 0..self.y {
             let mut ray = Vec3 { ..py };
             for x in 0..self.x {
+                // delta.x = distance from (1, y1, z1) to (2, y2, z2) following the ray
                 let delta = Vec3::compose(|i| if ray[i] == 0.0 { 1e30 } else { 1.0 / ray[i].abs() });
+                // step.x = shift to the next block on x axis
                 let step = Vec3::compose(|i| if ray[i] < 0.0 { -1.0 } else { 1.0 });
+                // block = the block that the ray is at
                 let mut block = Vec3::compose(|i| cam.pos[i].floor());
+                // side.x = distance between pov and a side of a block on x axis
                 let mut side = Vec3::compose(|i| (cam.pos[i] - block[i]).abs() * delta[i]);
+                // norm of current ray
                 let mut dist = 0.0;
                 while map.is_inside(block.x, block.y, block.z, cam.pos.w) {
+                    // neglect w coordinate
                     let hit = map.index(
                         block.x as usize,
                         block.y as usize,
                         block.z as usize,
                         cam.pos.w as usize,
                     );
+                    // if is visible
                     if (hit & 1) == 1 {
-                        // is opaque
-                        let p = Vec3::compose(|i| cam.pos[i] + ray[i] * dist);
-                        self[y][x] = if is_border(&p) { b'.' } else { b'@' };
+                        let target = Vec3::compose(|i| cam.pos[i] + ray[i] * dist);
+                        self[y][x] = if is_border(&target) { b'.' } else { b'@' };
                         break;
                     }
 
-                    if side.x < side.y.min(side.z) {
-                        dist = side.x;
-                        side.x += delta.x;
-                        block.x += step.x;
-                    } else if side.y < side.x.min(side.z) {
-                        dist = side.y;
-                        side.y += delta.y;
-                        block.y += step.y;
-                    } else {
-                        dist = side.z;
-                        side.z += delta.z;
-                        block.z += step.z;
-                    }
+                    let min = (1..=3).min_by(|&a, &b| side[a].partial_cmp(&side[b]).unwrap_or(Ordering::Equal)).unwrap();
+
+                    dist = side[min];
+                    side[min] += delta[min];
+                    block[min] += step[min];
                 }
                 ray += qx;
             }
