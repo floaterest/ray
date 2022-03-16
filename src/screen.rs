@@ -98,8 +98,8 @@ impl Screen {
                         break;
                     }
 
+                    // shift closest
                     let min = (1..=3).min_by(|&a, &b| side[a].partial_cmp(&side[b]).unwrap_or(Ordering::Equal)).unwrap();
-
                     dist = side[min];
                     side[min] += delta[min];
                     block[min] += step[min];
