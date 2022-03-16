@@ -35,7 +35,12 @@ struct Args {
 
 fn run<W: Write>(w: &mut W, map: Map) -> Result<()> {
     let mut cam = Cam {
-        pos: Vec4 { x: 4.5, y: 4.5, z: 4.5, w: 0.0 },
+        pos: Vec4 {
+            x: map.spawn.x as f64 + 0.5,
+            y: map.spawn.y as f64 + 0.5,
+            z: map.spawn.z as f64 + 0.5,
+            w: map.spawn.w as f64,
+        },
         pov: Vec3 { x: 1.0, y: 0.0, z: 0.0 },
         top: Vec3 { x: 0.0, y: 0.0, z: 1.0 },
         fov2: 1.0,
@@ -77,7 +82,7 @@ fn main() {
 
     if args.convert {
         if args.map.extension() == Some(OsStr::new(&"txt")) {
-            let map = Map::from_file(&args.map).unwrap();
+            let map = Map::from_text(&args.map).unwrap();
             let mut path = PathBuf::from(&args.map);
             path.set_extension("db");
             map.save_as(path).unwrap();
