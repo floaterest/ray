@@ -1,16 +1,14 @@
 use std::io::{Result, stdin, stdout, Write};
-use std::env;
 use std::f64::consts::*;
 use std::ffi::OsStr;
-use std::fs::File;
 use std::path::PathBuf;
 
 use termion::{event::Key, raw::IntoRawMode, input::TermRead, terminal_size};
-use clap::{App, Parser};
+use clap::Parser;
 
 use crate::map::Map;
 use crate::cam::Cam;
-use crate::math::{to_vec3n, Vec3, Vec4};
+use crate::math::{Vec3, Vec4};
 use crate::screen::Screen;
 
 mod math;
