@@ -26,7 +26,7 @@ struct Args {
     #[clap(parse(from_os_str))]
     map: PathBuf,
 
-    /// Convert map file to .db and exit
+    /// Convert map file from txt to db and exit
     #[clap(short, long)]
     convert: bool,
 }
