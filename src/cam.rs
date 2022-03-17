@@ -1,7 +1,4 @@
-use crate::{to_vec3n, Vec3, Vec4};
-
-const PHI: Vec3<f64> = Vec3 { x: -1.0, y: 0.0, z: 0.0 };
-const THETA: Vec3<f64> = Vec3 { x: 0.0, y: 0.0, z: 1.0 };
+use crate::{Vec3, Vec4};
 
 #[derive(Debug)]
 pub struct Cam {

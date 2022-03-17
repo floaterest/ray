@@ -1,8 +1,8 @@
 use std::cmp::Ordering;
-use std::f64::consts::FRAC_PI_2;
 use std::ops::{Index, IndexMut};
+
 use crate::{Cam, Map};
-use crate::math::{to_vec3n, Vec3};
+use crate::math::Vec3;
 
 const BORDER_SIZE: f64 = 0.03;
 
