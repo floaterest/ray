@@ -14,7 +14,7 @@ pub struct Vec3<T> {
     pub y: T,
     pub z: T,
 }
-
+/* (might use spherical coordinates later)
 pub fn to_vec3n(theta: f64, phi: f64) -> Vec3<f64> {
     //! convert (1, θ, φ) to (x, y, z) normalised
     //! uses the *mathematics* notation, i.e. azimuthal angle θ, polar angle φ
@@ -25,6 +25,7 @@ pub fn to_vec3n(theta: f64, phi: f64) -> Vec3<f64> {
         z: phi.cos(),
     }
 }
+*/
 
 //#region impl Vec3<T>
 impl<T> Vec3<T> where T: Copy {
