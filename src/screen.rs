@@ -56,8 +56,8 @@ impl Screen {
         let h = (self.y - 1) as f64;
 
         // top x front = left (right hand rule)
-        let tn = cam.pov;
-        let vn = cam.top;
+        let tn = cam.front;
+        let vn = -cam.down;
         let bn = vn * tn;
 
         // dim of screen halved

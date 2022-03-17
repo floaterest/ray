@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Index, IndexMut, Mul, Sub};
+use std::ops::{Add, AddAssign, Index, IndexMut, Mul, Neg, Sub};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vec4<T> {
@@ -44,6 +44,12 @@ impl<T> Vec3<T> where T: Copy + Mul<Output=T> + Add<Output=T> {
     }
 }
 
+impl Vec3<f64> {
+    pub fn rotate(&mut self, &axis: &Vec3<f64>, angle: f64) {
+        *self = *self * angle.cos() + (axis * *self) * angle.sin() + axis * self.dot(&axis) * (1.0 - angle.cos());
+    }
+}
+
 impl<T> Index<u8> for Vec3<T> {
     type Output = T;
     fn index(&self, index: u8) -> &Self::Output {
@@ -64,6 +70,14 @@ impl<T> IndexMut<u8> for Vec3<T> {
             3 => &mut self.z,
             i => panic!("{} is not a valid index for 3d vec, must be in [1,3]", i),
         }
+    }
+}
+
+impl<T: Neg<Output=T>> Neg for Vec3<T> where T: Copy {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Vec3::compose(|i| -self[i])
     }
 }
 
@@ -123,4 +137,17 @@ impl<T> Index<u8> for Vec4<T> {
         }
     }
 }
+
+impl<T> IndexMut<u8> for Vec4<T> {
+    fn index_mut(&mut self, index: u8) -> &mut Self::Output {
+        match index {
+            1 => &mut self.x,
+            2 => &mut self.y,
+            3 => &mut self.z,
+            4 => &mut self.w,
+            i => panic!("{} is not a valid index for 3d vec, must be in [1,4]", i),
+        }
+    }
+}
+
 //#endregion impl Vec4<T>
