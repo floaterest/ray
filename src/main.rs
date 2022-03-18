@@ -49,7 +49,7 @@ fn render<W: Write>(w: &mut W, map: Map) -> Result<()> {
         fov2: 1.0,
     };
 
-    // let input = stdin();
+    enable_raw_mode()?;
 
     while let Ok(Event::Key(KeyEvent { code, .. })) = event::read() {
         match code {
@@ -99,6 +99,7 @@ fn render<W: Write>(w: &mut W, map: Map) -> Result<()> {
             w.write_all(&scr[y])?;
         }
     }
+    disable_raw_mode()?;
     Ok(())
 }
 
@@ -115,14 +116,12 @@ fn run() {
             eprintln!("Invalid input file, expected a txt file");
         }
     } else {
-        enable_raw_mode().unwrap();
         let mut w = stdout();
         match args.map.extension().unwrap().to_str() {
             Some("db") => render(&mut w, Map::from_file(args.map).unwrap()).unwrap(),
             Some("txt") => render(&mut w, Map::from_text(args.map).unwrap()).unwrap(),
             _ => eprintln!("Invalid map file, expected a txt or db file"),
         }
-        disable_raw_mode().unwrap();
     }
 }
 
