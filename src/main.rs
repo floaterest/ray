@@ -5,6 +5,7 @@ use std::path::PathBuf;
 
 use crossterm::{execute, terminal::SetTitle};
 use clap::Parser;
+use crossterm::cursor::MoveToRow;
 use crossterm::event::{Event, KeyEvent, self, KeyCode};
 use crossterm::terminal::{Clear, ClearType, disable_raw_mode, enable_raw_mode, size};
 
@@ -94,6 +95,7 @@ fn render<W: Write>(w: &mut W, map: Map) -> Result<()> {
         scr.render(&cam, &map);
         execute!(w, Clear(ClearType::All))?;
         for y in 0..scr.y {
+            execute!(w,MoveToRow(y as u16))?;
             w.write_all(&scr[y])?;
         }
     }
