@@ -1,10 +1,12 @@
-use std::io::{Result, stdin, stdout, Write};
+use std::io::{Result, stdout, Write};
 use std::f64::consts::*;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 
-use termion::{event::Key, raw::IntoRawMode, input::TermRead, terminal_size};
+use crossterm::{execute, terminal::SetTitle};
 use clap::Parser;
+use crossterm::event::{Event, KeyEvent, self, KeyCode};
+use crossterm::terminal::{Clear, ClearType, disable_raw_mode, enable_raw_mode, size};
 
 use crate::map::Map;
 use crate::cam::Cam;
@@ -46,23 +48,23 @@ fn render<W: Write>(w: &mut W, map: Map) -> Result<()> {
         fov2: 1.0,
     };
 
-    let input = stdin();
+    // let input = stdin();
 
-    for c in input.keys() {
-        match c? {
-            Key::Up => cam.pitch(ROTATE),
-            Key::Down => cam.pitch(-ROTATE),
-            Key::Left => cam.yaw(-ROTATE),
-            Key::Right => cam.yaw(ROTATE),
-            Key::Char('q') => cam.roll(-ROTATE),
-            Key::Char('e') => cam.roll(ROTATE),
+    while let Ok(Event::Key(KeyEvent { code, .. })) = event::read() {
+        match code {
+            KeyCode::Up => cam.pitch(ROTATE),
+            KeyCode::Down => cam.pitch(-ROTATE),
+            KeyCode::Left => cam.yaw(-ROTATE),
+            KeyCode::Right => cam.yaw(ROTATE),
+            KeyCode::Char('q') => cam.roll(-ROTATE),
+            KeyCode::Char('e') => cam.roll(ROTATE),
 
-            Key::Char('w') => cam.move_forward(MOVE, &map),
-            Key::Char('a') => cam.move_right(-MOVE, &map),
-            Key::Char('d') => cam.move_right(MOVE, &map),
-            Key::Char('s') => cam.move_forward(-MOVE, &map),
+            KeyCode::Char('w') => cam.move_forward(MOVE, &map),
+            KeyCode::Char('a') => cam.move_right(-MOVE, &map),
+            KeyCode::Char('d') => cam.move_right(MOVE, &map),
+            KeyCode::Char('s') => cam.move_forward(-MOVE, &map),
 
-            Key::Char('r') => {
+            KeyCode::Char('r') => {
                 cam.pos = Vec4 {
                     x: map.spawn.x as f64 + 0.5,
                     y: map.spawn.y as f64 + 0.5,
@@ -73,19 +75,26 @@ fn render<W: Write>(w: &mut W, map: Map) -> Result<()> {
                 cam.down = Vec3 { x: 0.0, y: 0.0, z: -1.0 };
                 cam.right = Vec3 { x: 0.0, y: -1.0, z: 0.0 };
             }
-
-            Key::Esc => break,
+            KeyCode::Esc => break,
             _ => continue,
         }
-
-        let (width, height) = terminal_size()?;
+        let (width, height) = size()?;
+        execute!(w, SetTitle(format_args!(
+            "Size({},{},{},{}) | Pos({},{},{},{})",
+            map.size.x,
+            map.size.y,
+            map.size.z,
+            map.size.w,
+            cam.pos.x as u32,
+            cam.pos.y as u32,
+            cam.pos.z as u32,
+            cam.pos.w as u32,
+        )))?;
         let mut scr = Screen::new(width as usize, height as usize, b' ');
         scr.render(&cam, &map);
-        write!(w, "{}", termion::clear::All)?;
+        execute!(w, Clear(ClearType::All))?;
         for y in 0..scr.y {
-            write!(w, "{}", termion::cursor::Goto(1, y as u16 + 1))?;
             w.write_all(&scr[y])?;
-            // w.write_all("\n".as_bytes())?;
         }
     }
     Ok(())
@@ -104,13 +113,14 @@ fn run() {
             eprintln!("Invalid input file, expected a txt file");
         }
     } else {
-        let output = stdout();
-        let mut w = output.lock().into_raw_mode().unwrap();
+        enable_raw_mode().unwrap();
+        let mut w = stdout();
         match args.map.extension().unwrap().to_str() {
             Some("db") => render(&mut w, Map::from_file(args.map).unwrap()).unwrap(),
             Some("txt") => render(&mut w, Map::from_text(args.map).unwrap()).unwrap(),
             _ => eprintln!("Invalid map file, expected a txt or db file"),
         }
+        disable_raw_mode().unwrap();
     }
 }
 
