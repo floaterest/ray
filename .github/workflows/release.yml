@@ -1,0 +1,38 @@
+name: Build Release
+on: push
+
+env:
+  target: x86_64-pc-windows-gnu
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ['x86_64-unknown-linux-gnu', 'x86_64-pc-windows-gnu']
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: 'Windows: Install GCC linker'
+        run: sudo apt install mingw-w64
+        if: matrix.target == 'x86_64-pc-windows-gnu'
+
+      - name: Build for ${{ matrix.target }}
+        run: |
+          rustup target add ${{ matrix.target }}
+          cargo build --release --target ${{ matrix.target }}
+
+#      - name: Print directory tree
+#        run: |
+#          cd target
+#          tree
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.target }}
+          path: |
+            target/${{ matrix.target }}/release
+
+
