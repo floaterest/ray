@@ -46,7 +46,7 @@ fn render<W: Write>(w: &mut W, map: Map) -> Result<()> {
         front: Vec3 { x: 1.0, y: 0.0, z: 0.0 },
         down: Vec3 { x: 0.0, y: 0.0, z: -1.0 },
         right: Vec3 { x: 0.0, y: -1.0, z: 0.0 },
-        fov2: 1.0,
+        fov2: FRAC_PI_4,
     };
 
     enable_raw_mode()?;
@@ -64,6 +64,9 @@ fn render<W: Write>(w: &mut W, map: Map) -> Result<()> {
             KeyCode::Char('a') => cam.move_right(-MOVE, &map),
             KeyCode::Char('d') => cam.move_right(MOVE, &map),
             KeyCode::Char('s') => cam.move_forward(-MOVE, &map),
+
+            KeyCode::Char('-') => cam.fov2 += ROTATE,
+            KeyCode::Char('=') => cam.fov2 -= ROTATE,
 
             KeyCode::Char('r') => {
                 cam.pos = Vec4 {
