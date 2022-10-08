@@ -1,13 +1,8 @@
+use std::env;
 use std::f64::consts::*;
 use std::ffi::OsStr;
 use std::io::{Result, stdout, Write};
 use std::path::PathBuf;
-
-use clap::Parser;
-use crossterm::{execute, terminal::SetTitle};
-use crossterm::cursor::MoveToRow;
-use crossterm::event::{self, Event, KeyCode, KeyEvent};
-use crossterm::terminal::{Clear, ClearType, disable_raw_mode, enable_raw_mode, size};
 
 use crate::cam::Cam;
 use crate::map::Map;
@@ -23,18 +18,6 @@ mod screen;
 const ROTATE: f64 = FRAC_PI_3 / 10.0;
 const MOVE: f64 = 1.0;
 
-#[derive(Parser, Debug)]
-#[clap(about, version, author)]
-struct Args {
-    /// Map file (e.g. level.txt, level.db)
-    #[clap(parse(from_os_str))]
-    map: PathBuf,
-
-    /// Convert map file from txt to db and exit
-    #[clap(short, long)]
-    convert: bool,
-}
-
 fn render<W: Write>(w: &mut W, map: Map) -> Result<()> {
     let mut cam = Cam {
         pos: Vec4 {
@@ -48,86 +31,16 @@ fn render<W: Write>(w: &mut W, map: Map) -> Result<()> {
         right: Vec3 { x: 0.0, y: -1.0, z: 0.0 },
         fov2: FRAC_PI_4,
     };
-
-    enable_raw_mode()?;
-
-    while let Ok(Event::Key(KeyEvent { code, .. })) = event::read() {
-        match code {
-            KeyCode::Up => cam.pitch(ROTATE),
-            KeyCode::Down => cam.pitch(-ROTATE),
-            KeyCode::Left => cam.yaw(-ROTATE),
-            KeyCode::Right => cam.yaw(ROTATE),
-            KeyCode::Char('q') => cam.roll(-ROTATE),
-            KeyCode::Char('e') => cam.roll(ROTATE),
-
-            KeyCode::Char('w') => cam.move_forward(MOVE, &map),
-            KeyCode::Char('a') => cam.move_right(-MOVE, &map),
-            KeyCode::Char('d') => cam.move_right(MOVE, &map),
-            KeyCode::Char('s') => cam.move_forward(-MOVE, &map),
-
-            KeyCode::Char('-') => cam.fov2 += ROTATE,
-            KeyCode::Char('=') => cam.fov2 -= ROTATE,
-
-            KeyCode::Char('r') => {
-                cam.pos = Vec4 {
-                    x: map.spawn.x as f64 + 0.5,
-                    y: map.spawn.y as f64 + 0.5,
-                    z: map.spawn.z as f64 + 0.5,
-                    w: map.spawn.w as f64,
-                };
-                cam.front = Vec3 { x: 1.0, y: 0.0, z: 0.0 };
-                cam.down = Vec3 { x: 0.0, y: 0.0, z: -1.0 };
-                cam.right = Vec3 { x: 0.0, y: -1.0, z: 0.0 };
-            }
-            KeyCode::Esc => break,
-            _ => continue,
-        }
-        let (width, height) = size()?;
-        execute!(w, SetTitle(format_args!(
-            "Size({},{},{},{}) | Pos({},{},{},{})",
-            map.size.x,
-            map.size.y,
-            map.size.z,
-            map.size.w,
-            cam.pos.x as u32,
-            cam.pos.y as u32,
-            cam.pos.z as u32,
-            cam.pos.w as u32,
-        )))?;
-        let mut scr = Screen::new(width as usize, height as usize, b' ');
-        scr.render(&cam, &map);
-        execute!(w, Clear(ClearType::All))?;
-        for y in 0..scr.y {
-            execute!(w,MoveToRow(y as u16))?;
-            w.write_all(&scr[y])?;
-        }
+    let mut scr = Screen::new(20, 20, b' ');
+    scr.render(&cam, &map);
+    for y in 0..scr.y {
+        w.write_all(&scr[y])?;
     }
-    disable_raw_mode()?;
     Ok(())
 }
 
-fn run() {
-    let args: Args = Args::parse();
-
-    if args.convert {
-        if args.map.extension() == Some(OsStr::new(&"txt")) {
-            let map = Map::from_text(&args.map).unwrap();
-            let mut path = PathBuf::from(&args.map);
-            path.set_extension("db");
-            map.save_as(path).unwrap();
-        } else {
-            eprintln!("Invalid input file, expected a txt file");
-        }
-    } else {
-        let mut w = stdout();
-        match args.map.extension().unwrap().to_str() {
-            Some("db") => render(&mut w, Map::from_file(args.map).unwrap()).unwrap(),
-            Some("txt") => render(&mut w, Map::from_text(args.map).unwrap()).unwrap(),
-            _ => eprintln!("Invalid map file, expected a txt or db file"),
-        }
-    }
-}
-
 fn main() {
-    run();
+    let args: Vec<String> = env::args().collect();
+    let file = &args[1];
+    render(&mut stdout(), Map::from_text(file).unwrap()).unwrap();
 }
