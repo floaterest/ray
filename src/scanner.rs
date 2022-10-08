@@ -1,5 +1,5 @@
 use std::{
-    io::{BufReader, Result, Read, BufRead},
+    io::{BufRead, BufReader, Read, Result},
     iter::Peekable,
     mem::transmute,
     str::{FromStr, SplitWhitespace},

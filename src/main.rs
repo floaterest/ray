@@ -1,16 +1,16 @@
-use std::io::{Result, stdout, Write};
 use std::f64::consts::*;
 use std::ffi::OsStr;
+use std::io::{Result, stdout, Write};
 use std::path::PathBuf;
 
-use crossterm::{execute, terminal::SetTitle};
 use clap::Parser;
+use crossterm::{execute, terminal::SetTitle};
 use crossterm::cursor::MoveToRow;
-use crossterm::event::{Event, KeyEvent, self, KeyCode};
+use crossterm::event::{self, Event, KeyCode, KeyEvent};
 use crossterm::terminal::{Clear, ClearType, disable_raw_mode, enable_raw_mode, size};
 
-use crate::map::Map;
 use crate::cam::Cam;
+use crate::map::Map;
 use crate::math::{Vec3, Vec4};
 use crate::screen::Screen;
 
