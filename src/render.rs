@@ -72,7 +72,7 @@ pub fn render(width: usize, height: usize, cam: &Camera, map: &Map) -> Vec<Vec<u
                     break;
                 }
                 // shift to the closest coord that has a integer value
-                let min = (1..=3).min_by(|&i, &j| side[i].partial_cmp(&side[j]).unwrap_or(Ordering::Equal)).unwrap();
+                let min = (0..3).min_by(|&i, &j| side[i].partial_cmp(&side[j]).unwrap_or(Ordering::Equal)).unwrap();
                 d = side[min];
                 side[min] += delta[min];
                 block[min] += step[min];

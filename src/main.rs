@@ -1,14 +1,9 @@
-use std::env;
 use std::f64::consts::*;
-use std::fs::File;
-use std::io::{Result, stdout, Write};
+use std::io::{stdout, Write};
 
-use crate::camera::Camera;
-use crate::map::Map;
-use crate::math::Vec3;
-use crate::render::render;
+use crate::{camera::Camera, map::Map, render::render, vec3::Vec3};
 
-mod math;
+mod vec3;
 mod camera;
 mod render;
 mod map;
@@ -16,24 +11,19 @@ mod map;
 fn main() {
     // let args: Vec<String> = env::args().collect();
     // let mut r = Reader::new(File::open(&args[1]).unwrap());
-    let map = Map {
-        size: Vec3::new(3, 3, 3),
-        data: vec![
-            vec![
-                vec![true, true, true],
-                vec![true, true, true],
-                vec![true, true, true],
-            ], vec![
-                vec![true, true, true],
-                vec![true, false, true],
-                vec![true, true, true],
-            ], vec![
-                vec![true, true, true],
-                vec![true, true, true],
-                vec![true, true, true],
-            ],
-        ],
-    };
+    let map = Map::new(Vec3::new(3, 3, 3), vec![vec![
+        vec![true, true, true],
+        vec![true, true, true],
+        vec![true, true, true],
+    ], vec![
+        vec![true, true, true],
+        vec![true, false, true],
+        vec![true, true, true],
+    ], vec![
+        vec![true, true, true],
+        vec![true, true, true],
+        vec![true, true, true],
+    ]]);
     let cam = Camera {
         pos: Vec3::new(1.5, 1.5, 1.5),
         forward: Vec3::new(1.0, 0.0, 0.0),
