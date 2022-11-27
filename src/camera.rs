@@ -1,19 +1,19 @@
-use crate::{Map, Vec3, Vec4};
+use crate::Vec3;
 
 #[derive(Debug)]
-pub struct Cam {
+pub struct Camera {
     /// current position
-    pub pos: Vec4<f64>,
+    pub pos: Vec3<f64>,
     // vec from eye to center of screen
-    pub front: Vec3<f64>,
+    pub forward: Vec3<f64>,
     // vec from eye to top
-    pub down: Vec3<f64>,
-    pub right: Vec3<f64>,
+    pub upward: Vec3<f64>,
     /// fov/2
     pub fov2: f64,
 }
 
-impl Cam {
+/*
+impl Camera {
     pub fn pitch(&mut self, angle: f64) {
         //! look up
         self.front.rotate(&self.right, angle);
@@ -30,16 +30,18 @@ impl Cam {
         self.right.rotate(&self.down, angle);
     }
 
-    fn displace(&mut self, new: Vec3<f64>, map: &Map) {
+    fn displace(&mut self, new: Vec3<f64>, map: &Map<bool>) {
         if map.is_inside(new.x, new.y, new.z, self.pos.w) {
             (1..=3).for_each(|i| self.pos[i] = new[i]);
         }
     }
 
-    pub fn move_forward(&mut self, dist: f64, map: &Map) {
+    pub fn move_forward(&mut self, dist: f64, map: &Map<bool>) {
         self.displace(Vec3::compose(|i| self.pos[i] + self.front[i] * dist), map);
     }
-    pub fn move_right(&mut self, dist: f64, map: &Map) {
+    pub fn move_right(&mut self, dist: f64, map: &Map<bool>) {
         self.displace(Vec3::compose(|i| self.pos[i] + self.right[i] * dist), map);
     }
 }
+
+*/

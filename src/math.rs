@@ -1,19 +1,12 @@
 use std::ops::{Add, AddAssign, Index, IndexMut, Mul, Neg, Sub};
 
 #[derive(Debug, Clone, Copy)]
-pub struct Vec4<T> {
-    pub x: T,
-    pub y: T,
-    pub z: T,
-    pub w: T,
-}
-
-#[derive(Debug, Clone, Copy)]
 pub struct Vec3<T> {
     pub x: T,
     pub y: T,
     pub z: T,
 }
+
 /* (might use spherical coordinates later)
 pub fn to_vec3n(theta: f64, phi: f64) -> Vec3<f64> {
     //! convert (1, θ, φ) to (x, y, z) normalised
@@ -28,10 +21,13 @@ pub fn to_vec3n(theta: f64, phi: f64) -> Vec3<f64> {
 */
 
 //#region impl Vec3<T>
-impl<T> Vec3<T> where T: Copy {
+impl<T: Copy> Vec3<T> {
+    pub fn new(x: T, y: T, z: T) -> Self {
+        Self { x, y, z }
+    }
     pub fn compose<F: Fn(u8) -> T>(f: F) -> Self {
         Self {
-            x: f(1),
+            x: f(1), // todo index starts at 0
             y: f(2),
             z: f(3),
         }
@@ -123,31 +119,3 @@ impl<T: Mul<Output=T> + Sub<Output=T>> Mul for Vec3<T> where T: Copy {
     }
 }
 //#endregion impl Vec3<T>
-
-//#region impl Vec4<T>
-impl<T> Index<u8> for Vec4<T> {
-    type Output = T;
-    fn index(&self, index: u8) -> &Self::Output {
-        match index {
-            1 => &self.x,
-            2 => &self.y,
-            3 => &self.z,
-            4 => &self.w,
-            i => panic!("{} is not a valid index for 4d vec, must be in [1,4]", i),
-        }
-    }
-}
-
-impl<T> IndexMut<u8> for Vec4<T> {
-    fn index_mut(&mut self, index: u8) -> &mut Self::Output {
-        match index {
-            1 => &mut self.x,
-            2 => &mut self.y,
-            3 => &mut self.z,
-            4 => &mut self.w,
-            i => panic!("{} is not a valid index for 3d vec, must be in [1,4]", i),
-        }
-    }
-}
-
-//#endregion impl Vec4<T>
