@@ -1,29 +1,32 @@
 use std::f64::consts::*;
 use std::io::{stdout, Write};
 
-use crate::{camera::Camera, map::Map, render::render, vec3::Vec3};
+use crate::{
+    camera::Camera,
+    map::Map,
+    render::render,
+    trace::Trace,
+    vec3::Vec3,
+};
 
 mod vec3;
 mod camera;
 mod render;
 mod map;
+mod trace;
 
 fn main() {
     // let args: Vec<String> = env::args().collect();
     // let mut r = Reader::new(File::open(&args[1]).unwrap());
-    let map = Map::new(Vec3::new(3, 3, 3), vec![vec![
-        vec![true, true, true],
-        vec![true, true, true],
-        vec![true, true, true],
-    ], vec![
-        vec![true, true, true],
-        vec![true, false, true],
-        vec![true, true, true],
-    ], vec![
-        vec![true, true, true],
-        vec![true, true, true],
-        vec![true, true, true],
-    ]]);
+    let map = Map::new(Vec3::new(3, 3, 3), vec![
+        vec![vec![255; 3]; 3],
+        vec![
+            vec![255; 3],
+            vec![255, 0, 255],
+            vec![255; 3],
+        ],
+        vec![vec![255; 3]; 3],
+    ]);
     let cam = Camera {
         pos: Vec3::new(1.5, 1.5, 1.5),
         forward: Vec3::new(1.0, 0.0, 0.0),
