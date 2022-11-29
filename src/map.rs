@@ -1,5 +1,6 @@
 use crate::Vec3;
 
+#[derive(Debug)]
 pub struct Map {
     pub size: Vec3<usize>,
     // `data[z][y][x] == true iff block at (x,y,z) is opaque`
