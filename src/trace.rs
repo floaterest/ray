@@ -15,14 +15,31 @@ fn is_border(pos: &Vec3<f64>) -> bool {
 }
 
 pub struct Trace<'a> {
-    pub map: &'a Map,
-    pub cam: &'a Camera,
-    pub ray: Vec3<f64>,
-    pub delta: Vec3<f64>,
-    pub step: Vec3<f64>,
-    pub block: Vec3<f64>,
-    pub side: Vec3<f64>,
-    pub norm: f64, // todo put norm inside ray (as a non-unit vector)?
+    map: &'a Map,
+    cam: &'a Camera,
+    ray: Vec3<f64>,
+    delta: Vec3<f64>,
+    step: Vec3<f64>,
+    block: Vec3<f64>,
+    side: Vec3<f64>,
+    norm: f64, // todo put norm inside ray (as a non-unit vector)?
+}
+
+impl<'a> Trace<'a> {
+    pub fn new(map: &'a Map, cam: &'a Camera, ray: Vec3<f64>) -> Self {
+        let delta = Vec3::compose(|i| 1.0 / ray[i].abs());
+        let block = Vec3::compose(|i| cam.pos[i].floor());
+        Self {
+            map,
+            cam,
+            ray,
+            delta,
+            block,
+            step: Vec3::compose(|i| if ray[i] < 0.0 { -1.0 } else { 1.0 }),
+            side: Vec3::compose(|i| (cam.pos[i] - block[i]).abs() * delta[i]),
+            norm: 0.0,
+        }
+    }
 }
 
 impl<'a> Iterator for Trace<'a> {

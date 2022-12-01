@@ -1,4 +1,4 @@
-use crate::{Camera, Map, Trace, Vec3};
+use crate::{Camera, Map, Trace};
 
 pub fn render(width: usize, height: usize, cam: &Camera, map: &Map) -> Vec<Vec<u8>> {
     /*
@@ -28,20 +28,8 @@ pub fn render(width: usize, height: usize, cam: &Camera, map: &Map) -> Vec<Vec<u
     let qy = vn * (-2.0 * gy / h);
 
     (0..height).map(|y| p + qy * y as f64).map(
-        |p| (0..width).map(|x| p + qx * x as f64).map(|ray| (
-            ray,
-            Vec3::compose(|i| 1.0 / ray[i].abs()), // delta
-            Vec3::compose(|i| if ray[i] < 0.0 { -1.0 } else { 1.0 }), // step
-            Vec3::compose(|i| cam.pos[i].floor()), // block
-        )).map(|(ray, delta, step, block)| Trace {
-            map,
-            cam,
-            ray,
-            delta,
-            step,
-            block,
-            side: Vec3::compose(|i| (cam.pos[i] - block[i]).abs() * delta[i]),
-            norm: 0.0,
-        }.last().unwrap()).collect()
+        |p| (0..width).map(|x| p + qx * x as f64).map(
+            |ray| Trace::new(map, cam, ray).last().unwrap()
+        ).collect()
     ).collect()
 }
