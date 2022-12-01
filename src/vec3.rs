@@ -22,24 +22,25 @@ pub fn to_vec3n(theta: f64, phi: f64) -> Vec3<f64> {
 */
 
 //#region impl Vec3<T>
-impl<T> Vec3<T> {
-    // too lazy to type xyz
-    pub fn new(x: T, y: T, z: T) -> Self {
-        Self { x, y, z }
-    }
-}
-
 impl Vec3<f64> {
     #[allow(dead_code)] // will use later
     pub fn rotate(&mut self, &axis: &Vec3<f64>, angle: f64) {
         //! rotate angle along axis
         *self = *self * angle.cos() + (axis * *self) * angle.sin() + axis * self.dot(&axis) * (1.0 - angle.cos());
     }
+
+    pub fn normal(x: f64, y: f64, z: f64) -> Self {
+        Self { x, y, z } * (x * x + y * y + z * z).sqrt()
+    }
 }
 
 impl<T: Copy> Vec3<T> {
+    // too lazy to type xyz
+    pub fn new(x: T, y: T, z: T) -> Self {
+        Self { x, y, z }
+    }
+    // apply the same transformation to each value
     pub fn compose<F: Fn(usize) -> T>(f: F) -> Self {
-        //! apply the same transformation to each value
         Self { x: f(0), y: f(1), z: f(2) }
     }
 }
