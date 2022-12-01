@@ -21,8 +21,8 @@ pub fn render(width: usize, height: usize, cam: &Camera, map: &Map) -> Vec<Vec<u
     // half of the frame's dimension
     let gx = cam.fov2.tan();
     let gy = gx * h / w;
-    // py: pov to (0,y) for y in [0, height)
-    let p = tn + bn * gx + vn * gy;
+    // top-left pixel
+    let p = tn - bn * gx + vn * gy;
     // used to shift to the next pixel
     let qx = bn * (2.0 * gx / w);
     let qy = vn * (-2.0 * gy / h);
