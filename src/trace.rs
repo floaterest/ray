@@ -8,9 +8,9 @@ const OPAQUE: u8 = 127;
 const BORDER: u8 = 255;
 
 fn is_border(pos: &Vec3<f64>) -> bool {
-    //! return whether pos it near a border (i.e. grid line)
+    //! return whether pos it near block border
 
-    // if 2 of (x,y,z) is close to an integer => close to a grid line
+    // if 2 of (x,y,z) is close to an integer <=> close to border
     [pos.x, pos.y, pos.z].iter().filter(|&&n| (n - n.round()).abs() < BORDER_SIZE).count() >= 2
 }
 
@@ -18,9 +18,13 @@ pub struct Trace<'a> {
     map: &'a Map,
     cam: &'a Camera,
     ray: Vec3<f64>,
+    /// delta.x = distance from (x1, y1, z1) to (x1+1, y2, z2) along the ray
     delta: Vec3<f64>,
+    /// step.x = shift to the next block on x-axis
     step: Vec3<f64>,
+    /// the block that the ray is at (starts at camera)
     block: Vec3<f64>,
+    /// side.x = distance between pov.x and a side of block on x axis
     side: Vec3<f64>,
     norm: f64, // todo put norm inside ray (as a non-unit vector)?
 }
@@ -58,6 +62,7 @@ impl<'a> Iterator for Trace<'a> {
             Some(if is_border(&target) { OPAQUE } else { BORDER })
         } else {
             let min = (0..3).min_by(|&i, &j| side[i].partial_cmp(&side[j]).unwrap_or(Ordering::Equal)).unwrap();
+            // go to nearest border
             self.norm = side[min];
             self.side[min] += delta[min];
             self.block[min] += step[min];
