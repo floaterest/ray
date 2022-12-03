@@ -16,7 +16,7 @@ impl Map {
     }
     pub fn outside(&self, v: &Vec3<f64>) -> bool {
         //! check if v is inside the map
-        v.x < 0.0 || v.y < 0.0 && v.z < 0.0
+        v.x < 0.0 || v.y < 0.0 || v.z < 0.0
             || v.x >= self.size.x as f64 || v.y >= self.size.y as f64 || v.z >= self.size.z as f64
     }
 }
