@@ -30,8 +30,8 @@ fn main() {
     ).collect());
     let cam = Camera {
         pos: Vec3::new(1.5, 1.5, 1.5),
-        forward: Vec3::normal(1.0, 1.0, 1.0),
-        upward: Vec3::normal(0.0, 0.0, 1.0),
+        forward: Vec3::new(1.0, 1.0, 1.0).normal(),
+        upward: Vec3::new(0.0, 0.0, 1.0).normal(),
         fov2: FRAC_PI_4,
     };
     let frame = render(472, 81, &cam, &map);

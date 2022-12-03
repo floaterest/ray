@@ -26,10 +26,11 @@ pub struct Trace<'a> {
     block: Vec3<f64>,
     /// side.x = distance between pov.x and a side of block on x axis
     side: Vec3<f64>,
-    norm: f64, // todo put norm inside ray (as a non-unit vector)?
+    norm: f64,
 }
 
 impl<'a> Trace<'a> {
+    /// `ray` is unit vector
     pub fn new(map: &'a Map, cam: &'a Camera, ray: Vec3<f64>) -> Self {
         let delta = Vec3::compose(|i| 1.0 / ray[i].abs());
         let block = Vec3::compose(|i| cam.pos[i].floor());
@@ -51,13 +52,13 @@ impl<'a> Iterator for Trace<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let (map, cam) = &(self.map, self.cam);
         let (ray, delta, step) = &(self.ray, self.delta, self.step);
-        let (block, side, norm) = &(self.block, self.side, self.norm);
+        let (block, side) = &(self.block, self.side);
 
         if map.outside(&block) { return None; }
         let hit = *map.at(&Vec3::compose(|i| block[i] as usize));
         // if hit opaque
         if hit > 0 {
-            let target = Vec3::compose(|i| cam.pos[i] + ray[i] * *norm);
+            let target = Vec3::compose(|i| cam.pos[i] + ray[i] * self.norm);
             self.block = Vec3::compose(|_| -1.0);
             Some(if is_border(&target) { OPAQUE } else { BORDER })
         } else {

@@ -29,7 +29,8 @@ impl Vec3<f64> {
         *self = *self * angle.cos() + (axis * *self) * angle.sin() + axis * self.dot(&axis) * (1.0 - angle.cos());
     }
 
-    pub fn normal(x: f64, y: f64, z: f64) -> Self {
+    pub fn normal(&self) -> Self {
+        let (x, y, z) = (self.x, self.y, self.z);
         Self { x, y, z } * (x * x + y * y + z * z).sqrt()
     }
 }

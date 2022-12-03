@@ -4,9 +4,9 @@ use crate::Vec3;
 pub struct Camera {
     /// current position
     pub pos: Vec3<f64>,
-    // vec from eye to center of screen
+    // unit vec from eye to center of screen
     pub forward: Vec3<f64>,
-    // vec from eye to top
+    // unit vec from eye to top
     pub upward: Vec3<f64>,
     /// fov/2
     pub fov2: f64,
