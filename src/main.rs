@@ -1,6 +1,7 @@
 use std::env;
 use std::f64::consts::*;
 use std::io::{stdout, Write};
+use std::sync::Arc;
 
 use crate::{
     camera::Camera,
@@ -17,8 +18,6 @@ mod map;
 mod trace;
 
 fn main() {
-    // let args: Vec<String> = env::args().collect();
-    // let mut r = Reader::new(File::open(&args[1]).unwrap());
     let s = 9;
     let map = Map::new(Vec3::new(s, s, s), (0..s).map(
         |z| (0..s).map(
@@ -34,8 +33,9 @@ fn main() {
         upward: Vec3::new(0.0, 0.0, 1.0).normal(),
         fov2: FRAC_PI_4,
     };
-    let frame = render(472, 81, &cam, &map);
-    // let frame = render(2, 2, &cam, &map);
+    let cam = Arc::new(cam);
+    let map = Arc::new(map);
+    let frame = render(960, 1080, Arc::clone(&cam), Arc::clone(&map));
     if env::args().len() > 1 { return; }
     let mut w = stdout();
     frame.iter().for_each(|row| {

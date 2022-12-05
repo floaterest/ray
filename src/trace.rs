@@ -15,8 +15,8 @@ fn is_border(pos: &Vec3<f64>) -> bool {
 }
 
 pub struct Trace<'a> {
-    map: &'a Map,
     cam: &'a Camera,
+    map: &'a Map,
     ray: Vec3<f64>,
     /// delta.x = distance from (x1, y1, z1) to (x1+1, y2, z2) along the ray
     delta: Vec3<f64>,
@@ -31,12 +31,12 @@ pub struct Trace<'a> {
 
 impl<'a> Trace<'a> {
     /// `ray` is unit vector
-    pub fn new(map: &'a Map, cam: &'a Camera, ray: Vec3<f64>) -> Self {
+    pub fn new(cam: &'a Camera, map: &'a Map, ray: Vec3<f64>) -> Self {
         let delta = Vec3::compose(|i| 1.0 / ray[i].abs());
         let block = Vec3::compose(|i| cam.pos[i].floor());
         Self {
-            map,
             cam,
+            map,
             ray,
             delta,
             block,
