@@ -1,5 +1,5 @@
 {
-    "name": "untitled",
+    "name": "ray",
     "version": "0.0.0",
     "private": true,
     "scripts": {
@@ -7,7 +7,7 @@
         "wasm:dev": "cd wasm && cargo watch -i .gitignore -i \"pkg/*\" -s \"wasm-pack build --target web\""
     },
     "workspaces":[
-        "rust/pkg",
+        "wasm/pkg",
         "svelte"
     ]
 }
