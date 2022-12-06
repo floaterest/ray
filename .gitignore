@@ -1,9 +1,7 @@
-# build
-/target/
+/node_modules/
+
 # IDE
 /.idea/
 # test files
 *.txt
 *.db
-
-*.lock

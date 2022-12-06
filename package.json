@@ -1,0 +1,13 @@
+{
+    "name": "untitled",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "svelte:dev": "cd svelte && pnpm run dev",
+        "wasm:dev": "cd wasm && cargo watch -i .gitignore -i \"pkg/*\" -s \"wasm-pack build --target web\""
+    },
+    "workspaces":[
+        "rust/pkg",
+        "svelte"
+    ]
+}
