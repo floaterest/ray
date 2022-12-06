@@ -1,7 +1,7 @@
 /node_modules/
 
 # IDE
-/.idea/
+**/.idea/
 # test files
 *.txt
 *.db
