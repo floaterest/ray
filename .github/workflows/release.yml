@@ -1,8 +1,7 @@
 name: Build Release
-on: push
-
-env:
-  target: x86_64-pc-windows-gnu
+on:
+  push:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -24,15 +23,8 @@ jobs:
           rustup target add ${{ matrix.target }}
           cargo build --release --target ${{ matrix.target }}
 
-#      - name: Print directory tree
-#        run: |
-#          cd target
-#          tree
-
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.target }}
           path: |
             target/${{ matrix.target }}/release
-
-

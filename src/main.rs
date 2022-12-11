@@ -1,133 +1,49 @@
-use std::io::{Result, stdout, Write};
+use std::env;
 use std::f64::consts::*;
-use std::ffi::OsStr;
-use std::path::PathBuf;
+use std::io::{stdout, Write};
+use std::sync::Arc;
 
-use crossterm::{execute, terminal::SetTitle};
-use clap::Parser;
-use crossterm::cursor::MoveToRow;
-use crossterm::event::{Event, KeyEvent, self, KeyCode};
-use crossterm::terminal::{Clear, ClearType, disable_raw_mode, enable_raw_mode, size};
+use crate::{
+    camera::Camera,
+    map::Map,
+    render::render,
+    trace::Trace,
+    vec3::Vec3,
+};
 
-use crate::map::Map;
-use crate::cam::Cam;
-use crate::math::{Vec3, Vec4};
-use crate::screen::Screen;
-
-mod math;
-mod cam;
+mod vec3;
+mod camera;
+mod render;
 mod map;
-mod scanner;
-mod screen;
-
-const ROTATE: f64 = FRAC_PI_3 / 10.0;
-const MOVE: f64 = 1.0;
-
-#[derive(Parser, Debug)]
-#[clap(about, version, author)]
-struct Args {
-    /// Map file (e.g. level.txt, level.db)
-    #[clap(parse(from_os_str))]
-    map: PathBuf,
-
-    /// Convert map file from txt to db and exit
-    #[clap(short, long)]
-    convert: bool,
-}
-
-fn render<W: Write>(w: &mut W, map: Map) -> Result<()> {
-    let mut cam = Cam {
-        pos: Vec4 {
-            x: map.spawn.x as f64 + 0.5,
-            y: map.spawn.y as f64 + 0.5,
-            z: map.spawn.z as f64 + 0.5,
-            w: map.spawn.w as f64,
-        },
-        front: Vec3 { x: 1.0, y: 0.0, z: 0.0 },
-        down: Vec3 { x: 0.0, y: 0.0, z: -1.0 },
-        right: Vec3 { x: 0.0, y: -1.0, z: 0.0 },
-        fov2: FRAC_PI_4,
-    };
-
-    enable_raw_mode()?;
-
-    while let Ok(Event::Key(KeyEvent { code, .. })) = event::read() {
-        match code {
-            KeyCode::Up => cam.pitch(ROTATE),
-            KeyCode::Down => cam.pitch(-ROTATE),
-            KeyCode::Left => cam.yaw(-ROTATE),
-            KeyCode::Right => cam.yaw(ROTATE),
-            KeyCode::Char('q') => cam.roll(-ROTATE),
-            KeyCode::Char('e') => cam.roll(ROTATE),
-
-            KeyCode::Char('w') => cam.move_forward(MOVE, &map),
-            KeyCode::Char('a') => cam.move_right(-MOVE, &map),
-            KeyCode::Char('d') => cam.move_right(MOVE, &map),
-            KeyCode::Char('s') => cam.move_forward(-MOVE, &map),
-
-            KeyCode::Char('-') => cam.fov2 += ROTATE,
-            KeyCode::Char('=') => cam.fov2 -= ROTATE,
-
-            KeyCode::Char('r') => {
-                cam.pos = Vec4 {
-                    x: map.spawn.x as f64 + 0.5,
-                    y: map.spawn.y as f64 + 0.5,
-                    z: map.spawn.z as f64 + 0.5,
-                    w: map.spawn.w as f64,
-                };
-                cam.front = Vec3 { x: 1.0, y: 0.0, z: 0.0 };
-                cam.down = Vec3 { x: 0.0, y: 0.0, z: -1.0 };
-                cam.right = Vec3 { x: 0.0, y: -1.0, z: 0.0 };
-            }
-            KeyCode::Esc => break,
-            _ => continue,
-        }
-        let (width, height) = size()?;
-        execute!(w, SetTitle(format_args!(
-            "Size({},{},{},{}) | Pos({},{},{},{})",
-            map.size.x,
-            map.size.y,
-            map.size.z,
-            map.size.w,
-            cam.pos.x as u32,
-            cam.pos.y as u32,
-            cam.pos.z as u32,
-            cam.pos.w as u32,
-        )))?;
-        let mut scr = Screen::new(width as usize, height as usize, b' ');
-        scr.render(&cam, &map);
-        execute!(w, Clear(ClearType::All))?;
-        for y in 0..scr.y {
-            execute!(w,MoveToRow(y as u16))?;
-            w.write_all(&scr[y])?;
-        }
-    }
-    disable_raw_mode()?;
-    Ok(())
-}
-
-fn run() {
-    let args: Args = Args::parse();
-
-    if args.convert {
-        if args.map.extension() == Some(OsStr::new(&"txt")) {
-            let map = Map::from_text(&args.map).unwrap();
-            let mut path = PathBuf::from(&args.map);
-            path.set_extension("db");
-            map.save_as(path).unwrap();
-        } else {
-            eprintln!("Invalid input file, expected a txt file");
-        }
-    } else {
-        let mut w = stdout();
-        match args.map.extension().unwrap().to_str() {
-            Some("db") => render(&mut w, Map::from_file(args.map).unwrap()).unwrap(),
-            Some("txt") => render(&mut w, Map::from_text(args.map).unwrap()).unwrap(),
-            _ => eprintln!("Invalid map file, expected a txt or db file"),
-        }
-    }
-}
+mod trace;
 
 fn main() {
-    run();
+    let s = 9;
+    let map = Map::new(Vec3::new(s, s, s), (0..s).map(
+        |z| (0..s).map(
+            |y| (0..s).map(|x| (x % (s - 1), y % (s - 1), z % (s - 1))).map(
+                |(x, y, z)| if x * y + y * z + x * z == 0 { 255 } else { 0 }
+                // |(x, y, z)| if x * y * z == 0 { 255 } else { 0 }
+            ).collect()
+        ).collect()
+    ).collect());
+    let cam = Camera {
+        pos: Vec3::new(1.5, 1.5, 1.5),
+        forward: Vec3::new(1.0, 1.0, 1.0).normal(),
+        upward: Vec3::new(0.0, 0.0, 1.0).normal(),
+        fov2: FRAC_PI_4,
+    };
+    let cam = Arc::new(cam);
+    let map = Arc::new(map);
+    let frame = render(960, 1080, Arc::clone(&cam), Arc::clone(&map));
+    if env::args().len() > 1 { return; }
+    let mut w = stdout();
+    frame.iter().for_each(|row| {
+        w.write_all(&row.iter().map(|n| match n {
+            0 => b' ',
+            255 => b'.',
+            _ => b'#'
+        }).collect::<Vec<u8>>()).unwrap();
+        w.write_all(&[b'\n']).unwrap();
+    })
 }
